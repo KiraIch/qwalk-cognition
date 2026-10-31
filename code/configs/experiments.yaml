@@ -1,0 +1,72 @@
+experiments:
+  E1:
+    name: classical_vs_quantum_scaling
+    graphs:
+      complete: {n: [8, 16, 32, 64]}
+      cycle: {n: [8, 16, 32, 64]}
+      grid: {length: [4, 6, 8, 10]}
+      hypercube: {dim: [3, 4, 5, 6]}
+    marked: single
+    noise: none
+    priority: must
+  E2:
+    name: multiple_marked_vertices
+    graphs:
+      grid: {length: [6, 8]}
+      barbell: {n_each: [8, 16]}
+    marked: [single, independent, clustered]
+    marked_size: 4
+    seeds: [0, 1, 2]
+    adversarial_torus:
+      simulate_max_length: 18
+      laziness: 0.2  # AGJK construction
+      cases:
+        - {length: 18, d1: 1, k1: 7, d: 3}
+        - {length: 24, d1: 1, k1: 9, d: 4}
+        - {length: 30, d1: 1, k1: 11, d: 5}
+        - {length: 36, d1: 1, k1: 15, d: 6}
+    noise: none
+    priority: must
+  E3:
+    name: toy_semantic_search
+    graphs:
+      toy_semantic: {}
+    marked: single
+    cue: animal
+    targets: [dog, violin]
+    time_window_relaxation: 8.0
+    n_time_points: 1200
+    noise: none
+    priority: must
+  E4:
+    name: multi_alternative_decision
+    cases:
+      - {id: symmetric3, branch_lengths: [4, 4, 4], coupling_pair: [1, 2]}
+      - {id: asymmetric3, branch_lengths: [3, 4, 5], coupling_pair: [1, 2]}
+      - {id: symmetric4, branch_lengths: [4, 4, 4, 4], coupling_pair: [1, 2]}
+    coupling_grid: [0.0, 0.1, 0.25, 0.5, 0.75, 1.0, 2.0]
+    interpolation_s: 0.9
+    decision_threshold: 0.5
+    max_steps: 400
+    robustness:
+      detection_probability: 0.2  # rate for the quantum_detect readout
+      laziness_grid: [0.0, 0.05, 0.1, 0.2]
+      weight_jitter: 0.2  # edge weights x U[0.8, 1.2]
+      jitter_seeds: 10
+    noise: none
+    priority: should
+  E5:
+    name: decoherence_sweep
+    # Walk is W(0) of the lazy chain P_eta (eta = 0.1), i.e. interpolation s = 0.
+    cases:
+      - {id: grid_single, graph: grid, length: 6, cue: 0, targets: [35]}
+      - {id: grid_clustered, graph: grid, length: 6, cue: 0, targets: [28, 29, 34, 35]}
+      - {id: toy_single, graph: toy_semantic, cue: animal, targets: [violin]}
+      - {id: toy_clustered, graph: toy_semantic, cue: animal, targets: [instrument, piano, guitar, violin]}
+    measurement_probabilities: [0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1.0]
+    max_steps: 120
+    deadline: 20  # legacy single-deadline readout (appendix only)
+    horizons: [20, 40, 80, 120]  # uniform-deadline windows 1..H
+    interpolation_s: 0.0
+    noise: partial_measurement
+    priority: should

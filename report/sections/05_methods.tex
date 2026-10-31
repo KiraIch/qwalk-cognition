@@ -1,0 +1,231 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Graph families and marked sets}
+\label{sec:methods-graphs}
+
+We use four synthetic graph families for the scaling experiments: complete
+graphs $K_N$, cycles $C_N$, two-dimensional grids $L\times L$, and hypercubes
+$Q_d$ with $N=2^d$. The multiple-target experiments add barbell graphs
+(two cliques joined by a path) and $N\times N$ torus graphs with the marked-set
+pattern used in the AGJK counterexample. The semantic experiment uses a
+hand-built $19$-vertex concept graph with animal, vehicle, and instrument
+communities, connected by the bridge concepts \texttt{bird} and
+\texttt{airplane}. Decision experiments use a hub with one path per option;
+matching depths of two branches can be coupled with a tunable weight.
+
+For a graph $G=(V,E)$ we form the row-stochastic random-walk matrix
+\begin{equation}
+  P_{xy}=\frac{A_{xy}}{\sum_{z}A_{xz}},
+\end{equation}
+where $A$ is the adjacency matrix. All Szegedy and AGJK walks (E1, E2, E4,
+E5) use the lazy walk $P\mapsto(1-\eta)P+\eta I$ with $\eta=0.1$; the AGJK
+adversarial torus uses $\eta=0.2$, following the original construction.
+Laziness removes the eigenvalue $-1$ of bipartite graphs and multiplies every
+hitting time by exactly $1/(1-\eta)$, so it does not change any scaling law.
+For the lazy walk we report the phase gap $1-\lambda_2$ of the discriminant
+matrix, because on bipartite graphs the absolute gap
+$1-\max_{i\ge2}\lvert\lambda_i\rvert$ is capped at $2\eta$ by the image
+$2\eta-1$ of the eigenvalue $-1$. (When $\lambda_2<0$, as on small complete
+graphs, the phase gap exceeds $1$.) A
+marked set $M\subset V$ is either a single target, an independent set of $k$
+vertices chosen by farthest-point sampling, a connected cluster grown by BFS,
+or a set of option terminals. Table~\ref{tab:experiment-matrix} lists the
+experiment matrix.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.05\linewidth}
+    >{\raggedright\arraybackslash}p{0.23\linewidth}
+    >{\raggedright\arraybackslash}p{0.24\linewidth}
+    >{\raggedright\arraybackslash}p{0.15\linewidth}
+    >{\raggedright\arraybackslash}p{0.25\linewidth}@{}}
+    \toprule
+    ID & Graph / system & Marked set & Noise & Main metric \\
+    \midrule
+    E1 & $K_N$, $C_N$, grid, $Q_d$ & single & none & scaling of $T_q$ and $\HT$ \\
+    E2 & grid, barbell & single / independent / clustered & none & $p_M(t)$, $\HT^+$ \\
+    E2b & adversarial torus & AGJK pattern & none & $\HT^+/\HT$ \\
+    E3 & toy semantic graph & single target & none & activation, AUC \\
+    E4 & multi-branch graph & option terminals & none & choice prob., RT \\
+    E5 & grid, toy semantic & single, clustered & partial measurement & timed peak, detection by $T$ \\
+    \bottomrule
+  \end{tabular}
+  \caption{Experiment matrix. Each row corresponds to a processed result file in
+  \texttt{code/results/processed/}.}
+  \label{tab:experiment-matrix}
+\end{table}
+
+\subsection{Classical hitting time}
+\label{sec:methods-classical}
+
+For a marked set $M$, let $h_x$ be the expected time to reach $M$ from
+$x\notin M$, with $h_x=0$ for $x\in M$. The hitting times solve the linear
+system
+\begin{equation}
+  h_x=1+\sum_{y}P_{xy}h_y,\qquad x\notin M.
+  \label{eq:hitting-linear}
+\end{equation}
+The classical hitting time is the stationary average conditioned on starting
+outside $M$,
+\begin{equation}
+  \HT(P,M)=\frac{\sum_{x\notin M}\pi_x h_x}{1-p_M},
+  \qquad p_M=\sum_{x\in M}\pi_x.
+  \label{eq:hitting}
+\end{equation}
+We solve \eqref{eq:hitting-linear} directly for all grids and barbell graphs;
+the synthetic families are small enough that dense linear algebra is
+inexpensive.
+
+\subsection{Szegedy and AGJK search protocol}
+\label{sec:methods-szegedy}
+
+The quantum walk uses the register convention of AGJK,
+\begin{equation}
+  V(P)\lvert\bar 0\rangle\lvert x\rangle
+  =\sum_y\sqrt{P_{xy}}\lvert y,x\rangle,\qquad
+  W(P)=V^\dagger(P)\,\mathrm{Shift}\,V(P)\,\mathrm{Ref},
+\end{equation}
+with $\mathrm{Shift}\lvert x,y\rangle=\lvert y,x\rangle$ and
+$\mathrm{Ref}=(2\lvert\bar 0\rangle\langle\bar 0\rvert-I)\otimes I$. The
+discriminant matrix is $D_{xy}=\sqrt{P_{xy}P_{yx}}$.
+
+For multiple or clustered targets we use the interpolated walk
+\begin{equation}
+  P(s)=(1-s)P+sP',\qquad
+  P'=\begin{pmatrix}P_{UU}&P_{UM}\\0&I\end{pmatrix},
+  \label{eq:interpolated}
+\end{equation}
+and the corresponding walk operator $W(s)$ with an ancilla that records whether
+the current vertex is marked. The initial state is
+$\lvert\bar 0\rangle\lvert\sqrt{\pi}\rangle$. For each graph and marked set we
+scan $s$ over a fixed grid and select the value that maximizes the AGJK lower
+bound
+\begin{equation}
+  q_t(s)=\left\lVert\Pi_M T_t(D(s))\lvert\sqrt{\pi}\rangle\right\rVert^2,
+  \qquad t\le 3\sqrt{\HT}+5,
+  \label{eq:lower-bound}
+\end{equation}
+where $T_t$ is the Chebyshev polynomial of the first kind. We then run the
+actual walk $W(s)$ and record
+\begin{equation}
+  p_M(t)=\left\lVert(I\otimes\Pi_M)W^t(s)\lvert\bar 0\rangle
+  \lvert\sqrt{\pi}\rangle\right\rVert^2.
+\end{equation}
+The quantum search time is $T_q=\arg\max_{t\ge1}p_M(t)$ and the peak success
+probability is $p_{\max}=\max_t p_M(t)$. The extended hitting time $\HT^+$ is
+computed from the spectral definition
+\begin{equation}
+  \HT(s)=\frac{1}{1-p_M}\sum_{k=1}^{n-1}
+  \frac{\lvert\langle v_k(s)\rvert\sqrt{\pi_U}\rangle\rvert^2}{1-\lambda_k(s)},
+  \qquad
+  \HT^+=\lim_{s\to1}\HT(s),
+  \label{eq:ht-plus}
+\end{equation}
+evaluated at $s=1-10^{-6}$ as a numerical proxy. Equation
+\eqref{eq:ht-plus} is used only for diagnostics; the search curves use the
+actual operator $W(s)$.
+
+\subsection{Semantic activation protocol}
+\label{sec:methods-semantic}
+
+For the semantic experiment we use a continuous-time quantum walk (CTQW) and a
+continuous-time random walk (CRW) from the same cue vertex. Let
+\begin{equation}
+  L_{\mathrm{sym}}=I-D^{-1/2}AD^{-1/2}
+\end{equation}
+be the symmetric normalized Laplacian and
+$L_{\mathrm{rw}}=I-D^{-1}A$ the random-walk generator. The two models are
+\begin{equation}
+  \lvert\psi(t)\rangle=e^{-iL_{\mathrm{sym}}t}\lvert c\rangle,
+  \qquad
+  \rho(t)=\rho(0)e^{-L_{\mathrm{rw}}t},
+  \label{eq:ctqw-crw}
+\end{equation}
+with $\rho(0)=\lvert c\rangle\langle c\rvert$ at the cue $c$. Time is reported
+in units of the spectral gap, $\tau=\lambda_1t$, so that both walks are
+compared at the same relaxation scale. The target activation is
+$p_T(t)=\lvert\langle T\vert\psi(t)\rangle\rvert^2$ for CTQW and
+$p_T(t)=\rho_T(t)$ for CRW. We record the peak activation, time of peak, area
+under the activation curve, entropy at the peak, half-peak coverage, and the
+expected graph distance from the cue at the peak.
+
+\subsection{Decision protocol}
+\label{sec:methods-decision}
+
+The decision graph has a central hub and one path per option. Each option
+$i$ corresponds to a terminal set $M_i=\{\text{terminal}_i\}$. To control
+similarity, matching depths of branches $i$ and $j$ are joined by an edge of
+weight $c$; $c=0$ gives independent branches and large $c$ makes the two
+options highly similar. The quantum model runs the interpolated walk $W(s)$
+with $s=0.9$ and initial state $\lvert\bar 0\rangle\lvert\text{hub}\rangle$.
+The classical model runs the same graph with all option terminals absorbing.
+For each model we compute the option probabilities $p_i(t)$ and the total
+decision probability $P_M(t)=\sum_i p_i(t)$, with $T_{\max}=400$. We compare
+four readouts. (i) \emph{First crossing} (our original readout): choice
+probabilities are the normalized $p_i(t)$ at the first $t$ with
+$P_M(t)\ge0.5$, or at $\arg\max_tP_M(t)$ if the threshold is never reached.
+(ii) \emph{Random stopping}: $P_i\propto T_{\max}^{-1}\sum_{t=1}^{T_{\max}}p_i(t)$.
+(iii) \emph{Detection}: the measurement model of \cref{sec:methods-noise} with
+rate $p=0.2$, where a measurement landing on terminal $i$ ends the decision
+with choice $i$; $P_i$ is the probability of choice $i$ by $T_{\max}$
+(essentially one) and the decision time is the mean first-detection time.
+(iv) \emph{Classical}: absorption probabilities and mean absorption time of the
+classical walk. To test robustness we repeat every configuration for
+$\eta\in\{0,0.05,0.1,0.2\}$ and for ten independent draws in which every edge
+weight is multiplied by a factor uniform in $[0.8,1.2]$, and report the spread
+(max minus min) of the probability of the uncoupled option(s).
+
+\subsection{Partial-measurement protocol}
+\label{sec:methods-noise}
+
+The decoherence experiment uses the Szegedy walk $W(0)$ of the lazy chain $P_\eta$ ($\eta=0.1$), i.e.
+interpolation $s=0$, from a cue
+vertex. Before each step, with probability $p$ we measure the vertex register
+in the position basis and reset the state to
+$\lvert\bar 0\rangle\lvert x\rangle$; with probability $1-p$ the state evolves
+unitarily. Thus $p=0$ is the pure quantum walk and $p=1$ is exactly the
+classical random walk on the same graph. We compute the exact average over
+measurement trajectories by precomputing the position marginals and marked
+probabilities of the basis-state ensembles
+$W(0)^a\lvert\bar 0\rangle\lvert x\rangle$, then propagating the age
+distribution of the most recent measurement. This avoids Monte Carlo noise and
+makes the sweep deterministic. The success probability is the probability that
+the walker is at a marked vertex after the step. We use $T_{\max}=120$ and
+$p\in\{0,0.05,0.1,0.2,0.3,0.5,0.75,1\}$.
+
+Because $p_M(t)$ oscillates at small $p$, we do not compare rates at a single
+deadline. In the \emph{readout model} we report the peak, the time-averaged
+success $\bar p(H)=H^{-1}\sum_{t=1}^{H}p_M(t)$ (the success under a uniform
+deadline on $\{1,\dots,H\}$, the same device as randomized stopping in quantum
+search with unknown optimal time), and the coefficient of variation of $p_M$.
+In the \emph{detection model}, a measurement that lands on $M$ ends the search;
+the recursion is the same except that this mass is moved to a ``found''
+counter instead of being reset (\cref{app:measurement}). With a final readout
+at the deadline $T$, $F_p(T)$ is the probability that the target has been found
+by $T$; $F_0$ equals the pure readout curve and $F_1(T)=\Pr[\tau_M\le T]$ for
+the classical walk. We report $F_p(T)$ for $T\in\{20,40,80,120\}$ and the best
+rate $p^\ast(T)=\arg\max_pF_p(T)$.
+
+\subsection{Metrics and reproducibility}
+\label{sec:methods-reproducibility}
+
+The main metrics are the classical hitting time $\HT$, the extended hitting
+time $\HT^+$, the quantum search time $T_q$, the peak success probability
+$p_{\max}$, the speedup $\HT/T_q$, the target AUC, the activation entropy and
+radius, choice probabilities, decision time, and the success probability at a
+fixed deadline. Scaling exponents are fitted by ordinary least squares in
+log--log coordinates.
+
+The implementation is in Python~3.12 with NumPy, SciPy, NetworkX, Matplotlib,
+PyYAML, and pytest. The environment is created with the Miniforge file
+\texttt{code/environment.yml} (environment \texttt{qwalk-cognition}). All
+random choices use explicit seeds; the configuration files are
+\texttt{code/configs/base.yaml} and \texttt{code/configs/experiments.yaml}. The
+test suite contains 61 tests covering unitarity, norm preservation, the
+classical limit, hitting-time identities, decision normalization, and the
+exact measurement ensemble. Every figure in this paper is regenerated by the
+commands listed in \texttt{code/README.md}.
+
+\FloatBarrier

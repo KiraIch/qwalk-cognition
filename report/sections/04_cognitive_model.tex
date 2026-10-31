@@ -1,0 +1,131 @@
+\section{Cognitive Model}
+\label{sec:cognitive-model}
+
+\subsection{From walk objects to cognitive quantities}
+\label{sec:cognitive-mapping}
+
+The model treats a graph as a semantic or decision network and the walk as a
+deliberation process. \Cref{tab:mapping} lists the correspondence. The mapping
+is deliberately minimal: every cognitive quantity is a statistic of the walk,
+so the model can be simulated and compared with a classical baseline without
+additional free parameters.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{@{}p{0.34\linewidth}p{0.58\linewidth}@{}}
+    \toprule
+    Walk object & Cognitive interpretation \\
+    \midrule
+    Vertex $x\in V$ & concept, evidence state, or option \\
+    Edge $(x,y)\in E$ & semantic association or evidence transition \\
+    Marked set $M$ & target memory or decision boundary \\
+    Initial state $\lvert\psi_0\rangle$ & cue, question, or initial attention \\
+    Unitary $W(s)$ or $e^{-iLt}$ & deliberation / evidence accumulation \\
+    Measurement & committing to an answer or decision \\
+    $p_M(t)$ & target activation or success probability \\
+    $T_q=\arg\max_t p_M(t)$ & response time at peak evidence \\
+    First threshold crossing & response time under a deadline \\
+    $P_i$ for option sets $M_i$ & choice probability \\
+    $\HT$, $\HTp$ & expected search difficulty, context difficulty \\
+    Spectral gap $\lambda_1$ & deliberation / relaxation speed \\
+    Interpolation $s$ & commitment or absorption strength \\
+    Measurement rate $p$ & introspection or noise level \\
+    \bottomrule
+  \end{tabular}
+  \caption{Mapping between walk quantities and cognitive quantities. The
+  mapping is process-level and mathematical; it is not a claim about the
+  physical implementation of cognition.}
+  \label{tab:mapping}
+\end{table}
+
+\subsection{Modeling assumptions}
+\label{sec:cognitive-assumptions}
+
+We make five assumptions explicit.
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Process level.} The model describes the statistics of a search
+  or decision process. It does not claim that the brain implements a quantum
+  walk or a unitary circuit.
+  \item \textbf{Interference as multiple paths.} Quantum interference stands
+  for the interaction of multiple evidence paths or semantic associations. The
+  phase structure is a modeling device, not a physiological statement.
+  \item \textbf{Classical baseline.} The baseline is a Markov random walk on
+  the same graph with the same initial distribution and the same marked set.
+  This isolates the effect of interference from the effect of graph structure.
+  \item \textbf{Defined, not fitted, statistics.} Response time, choice
+  probability, target activation, entropy, and radius are defined from the walk
+  statistics. We do not fit behavioral data in this paper.
+  \item \textbf{Graph as prior.} The graph encodes the semantic or decision
+  prior. Changing edges or weights changes the predicted context effects.
+\end{enumerate}
+
+\subsection{Response time and choice probability}
+\label{sec:cognitive-rt}
+
+For a single target, the activation curve is $p_M(t)$. We use two response-time
+definitions. The \emph{peak time} is
+$T_q=\arg\max_{t\ge1}p_M(t)$, the time at which the evidence for the target is
+strongest. The \emph{threshold time} is the first $t$ with
+$p_M(t)\ge\theta$, where $\theta$ is a decision threshold. The threshold
+definition is closer to a deadline experiment; the peak definition is closer to
+an unconstrained search. For decoherence we report the peak success
+probability, the success averaged over a uniform deadline, and the probability
+that a measurement has already detected the target by the deadline.
+
+For multiple option sets $M_1,\dots,M_k$, the option probabilities at time $t$
+are
+\begin{equation}
+  P_i(t)=\left\lVert(I\otimes\Pi_{M_i})W^t(s)\lvert\psi_0\rangle\right\rVert^2,
+  \qquad
+  P_i=\frac{P_i(T)}{\sum_jP_j(T)},
+\end{equation}
+where $T$ is the decision time. Because $P_i(t)$ oscillates, $T$ must come
+from a phase-free stopping rule (a random stopping time or a measurement that
+detects an option, \cref{sec:methods-decision}); a first-threshold rule makes
+the choice depend on the oscillation phase. The choice entropy
+$-\sum_iP_i\log P_i$ measures how concentrated the choice distribution is. A
+uniform distribution gives maximal entropy; a strong context effect gives low
+entropy and a large $\max_iP_i-1/k$ bias.
+
+\subsection{Similarity and context effects}
+\label{sec:cognitive-context}
+
+The decision experiments manipulate similarity by coupling two branches at
+matching depths with weight $c$. A large $c$ means that the two options are
+strongly associated: a walker can move between them without returning to the
+hub. In a classical random walk this mainly redistributes probability among
+the coupled options; on a symmetric graph the classical choice is unchanged.
+In a quantum walk the coupling changes the interference pattern, so the
+uncoupled option gains share. This is a
+model-level analogue of the similarity effect: the choice
+probability of an option depends on the presence and similarity of the other
+options, not only on its own value.
+
+The semantic experiments manipulate distance in the same spirit. A cue and a
+target in the same community are close in the graph; a cross-community target
+requires a longer path. The CTQW and CRW are expected to differ most when the
+target is far from the cue, because the quantum walk maintains coherent
+amplitude across several paths while the classical walk relaxes locally.
+
+\subsection{Testable predictions}
+\label{sec:cognitive-predictions}
+
+The model yields four predictions that can be tested numerically and, in
+principle, behaviorally.
+\begin{enumerate}[leftmargin=1.4em]
+  \item For well-connected graphs and a single target, quantum search time
+  scales as $\sqrt{\HT}$ and beats the classical baseline.
+  \item Independent targets are easier than clustered targets; a large
+  $\HT^+$ penalty requires a structured, not merely clustered, marked set.
+  \item Semantic distance changes activation timing; the quantum walk has a
+  higher peak for far targets, while the classical walk has a higher early AUC
+  for near targets.
+  \item Coherence and measurement trade off: the pure walk has the highest
+  timed peak, while a partially measured walk that can stop on detection finds
+  extended (clustered) targets faster than both the pure and the classical
+  walk at moderate deadlines.
+\end{enumerate}
+These predictions are model-level. Confirming them numerically does not show
+that human cognition is quantum; it shows that the quantum-walk model makes
+distinct, falsifiable predictions relative to its classical counterpart.

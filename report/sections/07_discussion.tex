@@ -1,0 +1,140 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What the experiments show}
+\label{sec:discussion-findings}
+
+The scaling experiments reproduce the central AGJK phenomenon. Across four
+graph families the quantum search time fits $T_q\sim\HT^{0.44\text{--}0.52}$,
+close to the predicted square-root law, and the peak success probability is
+high enough that the fitted times are meaningful. The cycle gives the largest
+speedup because its classical hitting time is almost quadratic. The complete
+graph and hypercube have smaller finite-size speedups because their classical
+hitting times grow almost linearly over the simulated range.
+
+The multiple-target experiments refine the picture. Independent targets are
+easier: spreading targets across the graph lowers both the classical hitting
+time and the quantum search time. Clustered targets behave like a single
+target, because reaching the cluster does not mean finding a particular vertex.
+The extended hitting time is close to the classical hitting time for these
+configurations. The dramatic $\HT^+\gg\HT$ gap appears only in the periodic
+adversarial construction of AGJK. This is an important negative result for a
+naive reading of $\HT^+$: multiple targets alone do not create the penalty.
+The penalty is a property of the arrangement and of the resulting spectral
+structure.
+
+The semantic experiment shows a distance-dependent difference between CTQW and
+CRW. For a near target the classical walk activates the neighbor immediately
+and has a larger early AUC. For a far target the quantum walk maintains a
+larger and later peak, and its activation is spread over a larger radius. This
+is consistent with the intuition that coherent propagation can bridge
+communities, while classical diffusion relaxes to the stationary distribution.
+The result is a model-level prediction: a semantic-search experiment should
+see a larger peak but a later response for cross-community targets under the
+quantum model, and an earlier but lower activation under the classical model.
+
+The decision experiment produces a context effect that the classical walk
+cannot. Coupling two options shifts quantum choice toward the uncoupled
+option, increasingly with the coupling strength, while the classical choice on
+symmetric graphs stays exactly uniform. The effect is moderate (from $1/3$ to
+about $0.5$ on the symmetric three-option graph). Under the detection readout
+it is monotone and robust to laziness and edge-weight noise (spread
+$\le0.045$); under random stopping it is noisier; under a first-threshold
+readout it is swamped by the oscillation phase. This is the same lesson as in
+E5: a coherent walk must be read out with a stopping rule that does not depend
+on its phase.
+
+The decoherence experiment answers the noise question only once the readout
+is specified. Comparing rates at one deadline is unreliable, because the pure
+walk oscillates and the comparison then measures the oscillation phase; our
+own first analysis made this mistake and reported a $12\times$ gain that
+disappears under deadline averaging. If measurement only resets the walk, it
+makes the success curve flatter but not higher. If a measurement can also end
+the search, the pure walk wins only at short deadlines that catch its first
+peak; beyond that an intermediate rate $p\approx0.2$--$0.3$ beats both the pure
+quantum and the classical walk for clustered targets, and for single targets
+the best rate moves, non-monotonically, toward the classical limit. The
+model therefore predicts that the useful amount of ``introspection'' depends
+on how extended the target is and how much time is available, which is a
+testable prediction for deadline-manipulation experiments.
+
+\subsection{Relation to the literature}
+\label{sec:discussion-literature}
+
+The technical results are consistent with AGJK \citep{agjk2019}. Our numerical
+protocol tests the simpler interpolated-walk algorithm (Conjecture~3) and cites
+the fast-forwarding theorem as the proved guarantee. The adversarial torus
+reproduces the qualitative $\HT^+\gg\HT$ behavior and shows that the effect
+survives at modest sizes ($L=18$--$36$). We do not claim a new theorem; the
+contribution is the numerical validation and the cognitive interpretation.
+
+The semantic experiment is closest to Pavone and Faro \citep{pavone2025}, but
+it uses a discrete marked-vertex search perspective rather than an insight
+task. The decision experiment is related to Huang and Busemeyer
+\citep{huang2022} and to the evidence-accumulation literature
+\citep{chen2022}. The decoherence model is a simplified version of the
+open-system ideas in Epping et al.\ \citep{epping2023}: projective
+measurements at a fixed rate rather than a Lindblad master equation. The
+qualitative conclusion---that noise can help at intermediate levels and hurt at
+strong levels---is consistent with the broader quantum-cognition literature on
+decoherence-assisted processes.
+
+\subsection{Algorithmic versus biological claims}
+\label{sec:discussion-claims}
+
+The project is deliberately agnostic about biology. Quantum walks are used as a
+mathematical process model, not as a claim that the brain is a quantum computer.
+The algorithmic advantage is a statement about the number of walk steps needed
+to reach a target under a particular graph and marked set. Whether a biological
+system can realize such a walk is a separate question. We keep the two claims
+separate throughout: the QIS results concern complexity and spectra, and the
+cognitive results concern the qualitative patterns that a process model can
+produce.
+
+This separation also limits the interpretation of the context effects. The
+decision experiment shows that a quantum walk can produce a similarity-like
+shift in choice under option coupling. It does not show that human similarity
+effects arise from quantum interference. The value of the model is that it
+generates distinct predictions: a classical random walk and a quantum walk on
+the same graph produce different choice distributions and different response
+times, so an experiment could in principle distinguish them.
+
+\subsection{Limitations}
+\label{sec:discussion-limitations}
+
+Several limitations should be stated clearly.
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{No human data.} The experiments are numerical. The cognitive
+  quantities are model-defined, not fitted to behavioral data.
+  \item \textbf{Synthetic graphs.} The semantic graph is hand-built and small
+  ($19$ vertices). It illustrates the mechanism but does not capture the scale
+  or noise of real semantic memory.
+  \item \textbf{Interpolation selection.} The parameter $s$ is chosen by a
+  grid search on the AGJK lower bound. A different selection rule could change
+  the constants in the search times, although the scaling exponents are stable.
+  \item \textbf{Two walk formalisms.} The search experiments use discrete-time
+  Szegedy walks, while the semantic experiment uses continuous-time walks. We
+  compare them only within their own time normalizations and do not mix the
+  two formalisms in a single fit.
+  \item \textbf{Simplified noise.} The decoherence model uses projective
+  position measurements and resets. It is not a full Lindblad or open-system
+  model.
+  \item \textbf{Finite sizes.} The graphs have at most a few hundred vertices.
+  The asymptotic exponents are estimated from small ranges, especially for the
+  grid and hypercube.
+\end{itemize}
+
+\subsection{Future work}
+\label{sec:discussion-future}
+
+Four extensions would strengthen the project. First, replace the toy semantic
+graph with a ConceptNet subgraph and test whether the distance-dependent
+activation pattern survives in a real semantic network. Second, fit the
+decision model to behavioral choice and response-time data, using the coupling
+parameter as a free similarity parameter. Third, replace the projective
+measurement model with a Lindblad equation or a continuous dephasing model and
+compare the optimal noise level. Fourth, implement the decision graph on a
+small quantum device or circuit simulator to test whether the context effect
+survives realistic noise. A larger graph study could also test how the size
+of the context effect depends on branch lengths, coupling patterns, and the
+measurement rate of the detection readout.

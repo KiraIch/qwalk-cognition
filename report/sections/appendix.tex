@@ -1,0 +1,149 @@
+\section{Hitting-time derivations}
+\label{app:hitting}
+
+\paragraph{Complete graph.}
+For $K_N$ with one marked vertex, every unmarked vertex is equivalent. Let $h$
+be the expected hitting time from an unmarked vertex. Then
+\begin{equation}
+  h=1+\frac{N-2}{N-1}h,
+\end{equation}
+so $h=N-1$. Since the stationary distribution is uniform and we condition on
+starting outside the marked set, $\HT=N-1$.
+
+\paragraph{Cycle.}
+For $C_N$ with marked vertex $0$, the expected hitting time from distance $i$ is
+$h_i=i(N-i)$. It satisfies the recurrence
+\begin{equation}
+  h_i=1+\frac{1}{2}h_{i-1}+\frac{1}{2}h_{i+1},\qquad h_0=h_N=0,
+\end{equation}
+whose solution is the quadratic above. Averaging over
+$i=1,\dots,N-1$ gives
+\begin{equation}
+  \HT=\frac{1}{N-1}\sum_{i=1}^{N-1}i(N-i)=\frac{N(N+1)}{6}.
+\end{equation}
+These identities are used as sanity checks in \texttt{tests/test\_classical.py}.
+
+\section{Discriminant matrix and spectral identity}
+\label{app:discriminant}
+
+For a reversible chain, detailed balance gives
+$\pi_xP_{xy}=\pi_yP_{yx}$, hence
+\begin{equation}
+  D_{xy}=\sqrt{P_{xy}P_{yx}}
+  =\frac{\sqrt{\pi_x}P_{xy}}{\sqrt{\pi_y}},
+\end{equation}
+so $D=\mathrm{diag}(\pi)^{1/2}P\,\mathrm{diag}(\pi)^{-1/2}$. The matrices $D$
+and $P$ are similar, so they have the same eigenvalues, and $D$ is symmetric.
+The identity
+\begin{equation}
+  \langle\bar0|\langle x|W(P)|\bar0\rangle|y\rangle
+  =\sqrt{P_{xy}P_{yx}}=D_{xy}
+\end{equation}
+follows directly from the definitions of $V(P)$, $\mathrm{Shift}$, and
+$\mathrm{Ref}$. For the interpolated walk, the same computation gives the
+top-left block $D(s)$, which is the starting point for the Chebyshev bound
+\eqref{eq:chebyshev}.
+
+\section{Measurement ensemble recursion}
+\label{app:measurement}
+
+Let $\lvert\phi_{x,a}\rangle=W(0)^a\lvert\bar0\rangle\lvert x\rangle$ for
+$a=0,\dots,T_{\max}$, with position marginal
+$\mu_{x,a}(y)=\lVert\Pi_y\lvert\phi_{x,a}\rangle\rVert^2$ and marked mass
+$s_{x,a}=\sum_{y\in M}\mu_{x,a}(y)$. Let $\mu^{(0)}_a$ and $s^{(0)}_a$ be the
+corresponding quantities for the initial state. A trajectory is described by
+$q_0(t)$, the probability that no measurement has occurred by time $t$, and by
+$q_{x,a}(t)$, the probability that the last reset was at vertex $x$ and the
+state has evolved for $a$ steps since that reset.
+
+At one step,
+\begin{align}
+  q_0(t+1)&=(1-p)q_0(t),\\
+  q_{x,a+1}(t+1)&=(1-p)q_{x,a}(t),\\
+  q_{y,1}(t+1)&=p\,q_0(t)\mu^{(0)}_t(y)
+  +p\sum_{x,a}q_{x,a}(t)\mu_{x,a}(y).
+\end{align}
+The success probability is
+\begin{equation}
+  p_M(t+1)=q_0(t+1)s^{(0)}_{t+1}
+  +\sum_{x,a}q_{x,a}(t+1)s_{x,a}.
+\end{equation}
+This recursion is exact for the channel \eqref{eq:measurement-channel}. It
+requires the basis ensembles once per graph and marked set, after which a
+sweep over $p$ is inexpensive. The implementation is in
+\texttt{src/noise.py}.
+
+For the detection model, the mass that a measurement places on $M$ is removed
+instead of reset. With $f(t)$ the probability found by time $t$,
+\begin{align}
+  f(t+1)&=f(t)+p\sum_{y\in M}\Bigl[q_0(t)\mu^{(0)}_t(y)
+  +\sum_{x,a}q_{x,a}(t)\mu_{x,a}(y)\Bigr],
+\end{align}
+the reset term $q_{y,1}(t+1)$ is restricted to $y\notin M$, and the probability
+of having found the target with a final readout at $T$ is
+$F_p(T)=f(T)+q_0(T)s^{(0)}_T+\sum_{x,a}q_{x,a}(T)s_{x,a}$.
+
+\section{Additional results}
+\label{app:additional}
+
+\Cref{fig:e1-speedup} shows the classical-to-quantum speedup for E1. The cycle
+has the largest speedup because its classical hitting time grows almost
+quadratically; the complete graph has the smallest because its classical
+hitting time grows only linearly.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.72\linewidth]{figures/fig_e1_speedup.pdf}
+  \caption{Classical-to-quantum speedup $\HT/T_q$ versus graph size for E1.}
+  \label{fig:e1-speedup}
+\end{figure}
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{@{}llcccc@{}}
+    \toprule
+    Graph & Marked set & mean $\HT$ & mean $\HT^+$ & $\HT^+/\HT$ & mean $T_q$ \\
+    \midrule
+    Grid $6\times6$ & single & 46.1 & 46.1 & 1.00 & 12.0 \\
+    Grid $6\times6$ & independent & 14.4 & 14.6 & 1.01 & 6.7 \\
+    Grid $6\times6$ & clustered & 50.0 & 54.7 & 1.09 & 14.7 \\
+    Grid $8\times8$ & single & 95.5 & 95.5 & 1.00 & 17.0 \\
+    Grid $8\times8$ & independent & 34.7 & 35.3 & 1.02 & 10.7 \\
+    Grid $8\times8$ & clustered & 79.5 & 85.3 & 1.07 & 20.3 \\
+    Barbell $n=8$ & single & 373.6 & 373.6 & 1.00 & 51.0 \\
+    Barbell $n=8$ & independent & 7.6 & 10.5 & 1.38 & 5.0 \\
+    Barbell $n=8$ & clustered & 349.8 & 358.8 & 1.04 & 41.3 \\
+    Barbell $n=16$ & single & 2558.0 & 2557.9 & 1.00 & 134.0 \\
+    Barbell $n=16$ & independent & 16.8 & 25.4 & 1.52 & 7.0 \\
+    Barbell $n=16$ & clustered & 2478.6 & 2507.4 & 1.01 & 115.3 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Full E2 table. Means are over three seeds (0, 1, 2) of farthest-point sampling for the
+  independent and clustered configurations; for the $6\times6$ grid and the
+  barbell graphs ($n=8,16$) seeds 0 and 2 give the same set, so only two
+  distinct sets enter those means.}
+  \label{tab:e2-full}
+\end{table}
+
+\section{Reproducibility}
+\label{app:reproducibility}
+
+The environment is created with
+\begin{verbatim}
+mamba env create -f environment.yml
+mamba activate qwalk-cognition
+\end{verbatim}
+from \texttt{Final/code}. The experiments are run with
+\begin{verbatim}
+python -m src.experiments --only E1
+python -m src.experiments --only E2
+python -m src.experiments --only E3
+python -m src.experiments --only E4
+python -m src.experiments --only E5
+\end{verbatim}
+and write the CSV/JSON files in \texttt{results/} and the figures in
+\texttt{figures/}. The test suite is run with
+\texttt{python -m pytest -q} and currently contains 61 passing tests. The
+configuration files are \texttt{configs/base.yaml} and
+\texttt{configs/experiments.yaml}; all random choices use explicit seeds.

@@ -1,0 +1,126 @@
+\section{Background}
+\label{sec:background}
+
+\subsection{Classical random walks and hitting times}
+\label{sec:background-classical}
+
+Let $G=(V,E)$ be a connected graph with $n=\lvert V\rvert$ vertices and let
+$P$ be a row-stochastic transition matrix. A probability row vector $\pi$ is
+stationary if $\pi P=\pi$. For a reversible chain, detailed balance holds:
+$\pi_xP_{xy}=\pi_yP_{yx}$ for all $x,y$.
+
+Given a non-empty marked set $M\subset V$, the hitting time is the expected
+number of steps needed to reach $M$ from the stationary distribution,
+\begin{equation}
+  \HT(P,M)=\mathbb{E}_{X_0\sim\pi}\left[\min\{t\ge0:X_t\in M\}\right].
+\end{equation}
+For computations we use the equivalent conditioned form
+\begin{equation}
+  \HT(P,M)=\frac{1}{1-p_M}\sum_{x\notin M}\pi_x h_x,
+  \qquad h_x=1+\sum_yP_{xy}h_y,\quad x\notin M,
+  \label{eq:background-ht}
+\end{equation}
+with $p_M=\sum_{x\in M}\pi_x$. The linear system in \eqref{eq:background-ht}
+is small for the graphs in this paper and can be solved directly. Standard
+examples are $\HT=\Theta(N)$ on the complete graph, $\HT=\Theta(N^2)$ on the
+cycle, and $\HT=\Theta(N\log N)$ on the two-dimensional grid; the hypercube has
+$\HT=\Theta(N)$, and our data ($N=8$--$64$) give $\HT/N\approx1.15$--$1.34$.
+
+\subsection{Szegedy walks and the detection--finding gap}
+\label{sec:background-szegedy}
+
+A Szegedy walk lifts a Markov chain to a unitary operator on two vertex
+registers. With the convention used by AGJK,
+\begin{equation}
+  V(P)\lvert\bar0\rangle\lvert x\rangle
+  =\sum_y\sqrt{P_{xy}}\lvert y,x\rangle,
+  \qquad
+  W(P)=V^\dagger(P)\,\mathrm{Shift}\,V(P)\,\mathrm{Ref},
+  \label{eq:background-szegedy}
+\end{equation}
+where $\mathrm{Shift}\lvert x,y\rangle=\lvert y,x\rangle$ and
+$\mathrm{Ref}=(2\lvert\bar0\rangle\langle\bar0\rvert-I)\otimes I$. The
+discriminant matrix is
+\begin{equation}
+  D_{xy}=\sqrt{P_{xy}P_{yx}}
+  =\langle\bar0|\langle x|W(P)|\bar0\rangle|y\rangle.
+\end{equation}
+For a reversible chain, $D=\mathrm{diag}(\pi)^{1/2}P\,\mathrm{diag}(\pi)^{-1/2}$,
+so $D$ and $P$ share their spectrum and $D$ is symmetric.
+
+Szegedy's search algorithm detects a marked vertex in
+$O(\sqrt{\HT})$ steps. Detection is not the same as finding: measuring the
+final state need not return a marked vertex. The gap is especially visible
+when there are multiple marked vertices. This is the starting point of AGJK.
+
+\subsection{The AGJK algorithm and extended hitting time}
+\label{sec:background-agjk}
+
+AGJK introduce the absorbing walk $P'$ and the interpolated walk
+$P(s)=(1-s)P+sP'$, which stays at a marked vertex with probability $s$ instead
+of moving. The corresponding quantum walk $W(s)$ uses an ancilla to record
+whether the current vertex is marked. AGJK define the extended hitting time
+$\HT^+$ through the eigenvalues and eigenvectors of the discriminant matrix
+$D(s)$; if there is a single marked vertex, $\HT^+=\HT$, but with multiple
+marked vertices $\HT^+$ can be much larger.
+
+Two algorithms are given. The simpler one runs $W(s)$ for $O(\sqrt{\HT})$
+steps and is supported by a numerical conjecture (Conjecture~3 in the paper):
+for some $s$ and $t=O(\sqrt{\HT})$, measuring the vertex register returns a
+marked vertex with constant probability. The proved algorithm combines the
+interpolated walk with quantum fast-forwarding and achieves
+$\widetilde O(\sqrt{\HT})$ time for any graph and any marked set
+\citep{agjk2019}. We implement and test the first algorithm numerically; we
+cite the second as the theoretical guarantee and do not re-prove it.
+
+\subsection{Quantum cognition and quantum walks}
+\label{sec:background-cognition}
+
+Quantum cognition replaces classical probability with quantum probability in
+models of judgment and decision. Pothos and Busemeyer review the program and
+its explanations of order effects, conjunction and disjunction effects, and
+contextuality \citep{pothos2022,busemeyer2024}. The models are usually
+process-level: they do not assume that the brain implements a quantum circuit.
+
+Quantum walks enter this literature in several ways. Chen, Ferro, and Sornette
+use discrete-time quantum walks as evidence accumulators and discuss how
+partial measurement produces decoherence \citep{chen2022}. Huang and Busemeyer
+propose a quantum walk framework for multi-alternative decision making
+\citep{huang2022}. Pavone and Faro use continuous-time quantum walks on
+semantic graphs to model the emergence of insight through interference
+\citep{pavone2025}. Epping et al.\ develop an open-system model of choice and
+response time \citep{epping2023}, and Widdows et al.\ give quantum circuit
+components for cognitive decision-making \citep{widdows2023}.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{@{}p{0.23\linewidth}p{0.25\linewidth}p{0.25\linewidth}p{0.19\linewidth}@{}}
+    \toprule
+    Paper & Model & Cognitive phenomenon & Role here \\
+    \midrule
+    AGJK 2019 & quantum walk search & marked-vertex search, $\HT^+$ & QIS core \\
+    Chen et al.\ 2022 & DTQW & evidence accumulation, decoherence & measurement model \\
+    Huang--Busemeyer 2022 & quantum walk & multi-alternative choice & decision mapping \\
+    Pavone--Faro 2025 & CTQW on semantic graphs & insight, interference & semantic experiment \\
+    Pothos--Busemeyer 2022 & quantum probability & context, order effects & motivation \\
+    Epping et al.\ 2023 & open-system model & choice and response time & noise interpretation \\
+    \bottomrule
+  \end{tabular}
+  \caption{Literature map. The technical core is AGJK; the other papers supply
+  the cognitive interpretation and the measurement/noise models.}
+  \label{tab:literature}
+\end{table}
+
+\subsection{The gap}
+\label{sec:background-gap}
+
+The two literatures meet at the level of metaphor but not at the level of
+algorithmic structure. Quantum-walk search papers analyze worst-case
+complexity and spectral quantities but do not ask what those quantities mean
+for a cognitive process. Quantum-cognition papers use walks as evidence
+accumulators but rarely exploit the marked-set structure, the extended hitting
+time, or the difference between detection and finding. This paper treats the
+marked-vertex search problem as a process model and uses its structural
+quantities---$\HT$, $\HT^+$, the spectral gap, and the success curve---as the
+bridge between the two literatures.

@@ -1,0 +1,136 @@
+\documentclass[10pt]{article}
+
+\usepackage[margin=0.85in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\setlist[itemize]{leftmargin=1.2em,itemsep=1pt,topsep=2pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=1.4em,itemsep=1pt,topsep=2pt,parsep=0pt}
+\titlespacing*{\section}{0pt}{5pt}{1pt}
+\titlespacing*{\subsection}{0pt}{3pt}{1pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+
+\newcommand{\HT}{\mathrm{HT}}
+\newcommand{\HTp}{\mathrm{HT}^{+}}
+\newcommand{\Otil}{\widetilde{O}}
+
+\title{\vspace{-2.2em}Quantum Walk Search as a Model of Cognitive Search\\[0.25em]
+\large From Marked Vertices to Quantum Cognition}
+% If submitting solo, remove the second author line.
+\author{[Student Name 1] \quad [Student ID 1]\\[0.2em]
+[Student Name 2] \quad [Student ID 2]}
+\date{EE5105 Special Topics in Quantum Information Science\\
+Instructor: Prof. Shih-Han Hung \quad Fall 2026 \quad Project Proposal \quad October 21, 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.4em}
+
+\begin{abstract}
+\noindent
+This project bridges quantum walk search and quantum cognition. Its technical core is the Ambainis--Gily\'en--Jeffery--Kokainis (AGJK) algorithm for finding marked vertices on an arbitrary graph, which achieves a quadratic speedup over the classical hitting time up to logarithmic factors. We interpret marked vertices as target memories or decision alternatives on a semantic or decision graph, and compare classical random walks, Szegedy/AGJK quantum walks, and open-system walks with partial measurement. We study how graph topology, marked-set structure, and decoherence affect hitting time, success probability, and choice probability, aiming to reproduce the $\Otil(\sqrt{\HT})$ scaling, relate the extended hitting time $\HTp$ to multi-alternative decision difficulty, and critically assess quantum cognition models.
+\end{abstract}
+
+\section{Motivation and Scope}
+
+Quantum cognition models judgment and decision making with quantum probability, without claiming that the brain is a quantum computer; it captures contextuality, order effects, interference, and evidence accumulation that classical probability handles poorly \cite{pothos2022,busemeyer2024}. Quantum walks provide a process-level model: a walker on a semantic or decision graph represents unfolding evidence, and a marked vertex is a target memory or option \cite{chen2022,huang2022,pavone2025}.
+
+The missing link is algorithmic structure. AGJK \cite{agjk2019} does not merely detect a marked vertex; it finds one on any graph, for any marked set, with a quadratic speedup over the classical hitting time up to logarithmic factors. It also isolates the extended hitting time $\HTp$, which can be much larger than $\HT$ for multiple marked vertices. This maps naturally onto cognitive search with multiple targets and multi-alternative choice.
+
+The project is anchored in the course's quantum-walk and query-complexity material; quantum cognition is the application, not a replacement for the QIS core. We do not claim the brain implements a quantum walk; we use quantum probability as a process-level framework and study its predictions and limits.
+
+\section{Research Questions and Hypotheses}
+
+\textbf{RQ1 (mapping).} How can marked-vertex search be mapped onto cognitive search on a semantic/decision graph, and what do $\HT$, $\HTp$, spectral gap, and success probability correspond to cognitively (response time, choice probability, deliberation speed)?
+
+\textbf{RQ2 (structure).} How do the number and arrangement of marked vertices (single, independent, clustered) change quantum versus classical search time and success probability? Can $\HTp$ formalize multi-alternative decision difficulty and context effects?
+
+\textbf{RQ3 (noise).} How does partial measurement or decoherence erode the quantum advantage, and is there an optimal ``introspection'' level that maximizes success probability or decision speed?
+
+We will test three hypotheses. \textbf{H1:} for well-connected graphs and a single target, quantum search time scales as $\sqrt{\HT}$ and beats the classical baseline. \textbf{H2:} clustered multiple targets can cause a large $\HTp$ penalty for a naive quantum search, while the AGJK improved algorithm restores $\Otil(\sqrt{\HT})$ scaling. \textbf{H3:} choice probability and response time depend non-monotonically on target similarity or clustering, analogous to similarity and attraction effects; weak partial measurement may help by suppressing destructive interference, while strong measurement destroys the advantage.
+
+\section{Approach and Methods}
+
+\subsection{Quantum information core}
+We will review and reproduce Szegedy's walk and AGJK: the discriminant matrix $D_{xy}=\sqrt{P_{xy}P^{*}_{yx}}$, the walk operator, $\HT$, $\HTp$, the interpolated walk $P(s)=(1-s)P+sP'$, and quantum fast-forwarding \cite{agjk2019}. Numerically, we will implement Algorithm~1 and test Conjecture~3 on small graphs; Theorem~5 will be cited as the guarantee, and its logarithmic overhead discussed rather than re-proved.
+
+\subsection{Cognitive mapping}
+A graph $G=(V,E)$ represents concepts, evidence states, or options; a marked set $M\subset V$ is a target memory or decision boundary. From an initial state $|\psi_0\rangle$, the walk evolves unitarily; success probability is $p_M(t)=\|\Pi_M U(t)|\psi_0\rangle\|^2$, response time is the first $t$ with $p_M(t)\ge p^{*}$, and for multiple marked sets $M_1,\dots,M_k$ the choice probability for option $i$ is the mass in $M_i$ at decision time. The classical baseline is a Markov walk on the same graph. This is a process-level model, not a biological claim.
+
+\subsection{Experiments}
+We will use synthetic graphs (complete, cycle, 2D grid, hypercube, random regular, clustered) and a small hand-built semantic graph; if time permits, a ConceptNet subgraph following Pavone--Faro \cite{pavone2025}. Marked-set configurations: single, independent, clustered, and absorbing decision boundaries. Metrics: classical/quantum search time, success probability vs.\ time, scaling exponents, spectral gap, choice probability, and response time. A partial-measurement model will interpolate between unitary and classical behavior. The implementation will use Python, NumPy/SciPy, NetworkX, and Matplotlib, with fixed seeds, configs, and a README reproducing every figure.
+
+\section{Expected Results and Contributions}
+
+We expect (i) numerical reproduction of $\Otil(\sqrt{\HT})$ scaling on at least two graph families; (ii) a comparison of single, independent, and clustered marked sets, showing when the $\HTp$ penalty appears and how the improved algorithm avoids it; (iii) a semantic-graph demonstration where quantum and classical walks produce different target-activation and response-time patterns; and (iv) a decoherence sweep showing whether a nonzero measurement rate helps or hurts. The contribution is not a new theorem but a careful bridge: a rigorous quantum algorithm becomes a testable process model for cognitive search and multi-alternative choice. The discussion will separate algorithmic advantage from biological plausibility and state what would be needed to fit behavioral data.
+
+\section{Timeline}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Dates & Milestones \\
+\midrule
+Oct 21 & Proposal submitted; scope confirmed with instructor. \\
+Oct 22--Nov 4 & Read AGJK and Chen et al.; implement classical and Szegedy walks; reproduce basic scaling. \\
+Nov 5--Nov 18 & Build semantic and decision graphs; implement cognitive mapping; run single vs.\ multiple/clustered marked-set experiments. \\
+Nov 19--Nov 25 & Add partial measurement/decoherence; complete sensitivity analysis. \\
+Nov 26--Dec 9 & Freeze figures; write theory, results, and discussion; complete a full draft. \\
+Dec 10--Dec 13 & Prepare and rehearse slides. \\
+Dec 14 & Project presentation. \\
+Dec 15--Dec 21 & Incorporate feedback; submit the final paper. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section*{AI Tool Usage}
+% Keep and adapt this section if AI tools were used; otherwise delete it.
+The authors used [model name] for LaTeX drafting and literature organization. All technical content, citations, and interpretations were checked by the authors.
+
+\begin{thebibliography}{9}
+\small
+\setlength{\itemsep}{0pt}
+
+\bibitem{agjk2019}
+A. Ambainis, A. Gily\'en, S. Jeffery, and M. Kokainis,
+``Quadratic speedup for finding marked vertices by quantum walks,''
+arXiv:1903.07493, 2019.
+
+\bibitem{chen2022}
+M. Chen, G. M. Ferro, and D. Sornette,
+``On the use of discrete-time quantum walks in decision theory,''
+\emph{PLoS ONE} 17(8), e0273551, 2022.
+
+\bibitem{huang2022}
+J. Huang and J. R. Busemeyer,
+``A quantum walk framework for multialternative decision making,''
+ICCM 2022; DOI: 10.31234/osf.io/hmv4a.
+
+\bibitem{pavone2025}
+A. Pavone and S. Faro,
+``Modeling the emergence of insight via quantum interference on semantic graphs,''
+\emph{Mathematics} 13(19), 3171, 2025.
+
+\bibitem{pothos2022}
+E. M. Pothos and J. R. Busemeyer,
+``Quantum cognition,''
+\emph{Annual Review of Psychology} 73, 749--778, 2022.
+
+\bibitem{busemeyer2024}
+J. R. Busemeyer and P. D. Bruza,
+\emph{Quantum Models of Cognition and Decision}, 2nd ed.,
+Cambridge University Press, 2024.
+
+\end{thebibliography}
+
+\end{document}

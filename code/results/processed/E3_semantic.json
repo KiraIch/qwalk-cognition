@@ -1,0 +1,67 @@
+{
+  "spectral_gap": 0.03334676955264903,
+  "relaxation_time": 29.987912275015592,
+  "cue": "animal",
+  "targets": [
+    "dog",
+    "violin"
+  ],
+  "metrics": [
+    {
+      "cue": "animal",
+      "target": "dog",
+      "target_distance": 1,
+      "model": "quantum",
+      "relaxation_time": 29.987912275015592,
+      "p_peak": 0.23669183944048738,
+      "t_peak": 142.4613413832267,
+      "tau_peak": 4.7506255212677235,
+      "auc": 0.4806887822642399,
+      "entropy_peak": 3.4127768567263868,
+      "coverage_half_peak": 0.10526315789473684,
+      "expected_radius_peak": 1.7977645401803397
+    },
+    {
+      "cue": "animal",
+      "target": "dog",
+      "target_distance": 1,
+      "model": "classical",
+      "relaxation_time": 29.987912275015592,
+      "p_peak": 0.15806457777236968,
+      "t_peak": 3.801636918934421,
+      "tau_peak": 0.12677231025854882,
+      "auc": 0.5796156042371086,
+      "entropy_peak": 3.2369401973716445,
+      "coverage_half_peak": 0.3157894736842105,
+      "expected_radius_peak": 0.9674674465871412
+    },
+    {
+      "cue": "animal",
+      "target": "violin",
+      "target_distance": 4,
+      "model": "quantum",
+      "relaxation_time": 29.987912275015592,
+      "p_peak": 0.24703780584766652,
+      "t_peak": 205.68856592971497,
+      "tau_peak": 6.859049207673062,
+      "auc": 0.36039192683938126,
+      "entropy_peak": 3.2821809466021965,
+      "coverage_half_peak": 0.10526315789473684,
+      "expected_radius_peak": 2.9948784117492484
+    },
+    {
+      "cue": "animal",
+      "target": "violin",
+      "target_distance": 4,
+      "model": "classical",
+      "relaxation_time": 29.987912275015592,
+      "p_peak": 0.04545060178198629,
+      "t_peak": 239.90329820012474,
+      "tau_peak": 8.0,
+      "auc": 0.323518190290626,
+      "entropy_peak": 4.176841748639851,
+      "coverage_half_peak": 1.0,
+      "expected_radius_peak": 2.3635026656114846
+    }
+  ]
+}

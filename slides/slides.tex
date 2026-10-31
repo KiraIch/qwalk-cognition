@@ -1,0 +1,178 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usetheme{default}
+\usecolortheme{seahorse}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+
+\newcommand{\HT}{\mathrm{HT}}
+\newcommand{\HTp}{\mathrm{HT}^{+}}
+\newcommand{\Otil}{\widetilde{O}}
+
+\title{Quantum Walk Search as a Model of Cognitive Search}
+\subtitle{From Marked Vertices to Quantum Cognition}
+\author{[Student Name] \quad [Student ID]}
+\institute{EE5105 Special Topics in Quantum Information Science\\Prof. Shih-Han Hung}
+\date{Fall 2026}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Takeaway}
+  \begin{itemize}
+    \item QIS core: AGJK finds marked vertices on any graph in $\Otil(\sqrt{\HT})$ time.
+    \item Cognitive mapping: marked vertices are target memories or decision alternatives.
+    \item Question: how do topology, marked-set structure, and decoherence change the advantage?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\section{Motivation and Questions}
+
+\begin{frame}{Why quantum walks for cognition?}
+  \begin{itemize}
+    \item Quantum cognition uses quantum probability without claiming a quantum brain.
+    \item Random walks model evidence accumulation and semantic spreading.
+    \item Quantum walks add interference between search paths.
+    \item Gap: algorithmic structure of marked-vertex search is rarely mapped to cognition.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Research questions}
+  \begin{enumerate}
+    \item How do $\HT$, $\HTp$, spectral gap, and success probability map to response time, choice probability, and deliberation speed?
+    \item How do single, independent, and clustered marked sets change the quantum advantage?
+    \item Does partial measurement create an optimal level of introspection?
+  \end{enumerate}
+\end{frame}
+
+\section{Background}
+
+\begin{frame}{Classical walk and hitting time}
+  \begin{itemize}
+    \item Graph $G=(V,E)$, transition matrix $P$, marked set $M\subset V$.
+    \item Hitting time $\HT=\mathbb{E}_{v\sim\pi}[\min\{t:X_t\in M\}]$.
+    \item Examples: complete graph $\Theta(N)$, cycle $\Theta(N^2)$, grid $\Theta(N\log N)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Szegedy walk: detection is not finding}
+  \begin{itemize}
+    \item $V(P)|0\rangle|x\rangle=\sum_y\sqrt{P_{xy}}|y,x\rangle$.
+    \item $W(P)=V^\dagger(P)\,\mathrm{Shift}\,V(P)\,\mathrm{Ref}$.
+    \item Discriminant matrix $D_{xy}=\sqrt{P_{xy}P_{yx}}$.
+    \item Detection takes $O(\sqrt{\HT})$, but measuring the final state need not output a marked vertex.
+  \end{itemize}
+\end{frame}
+
+\section{AGJK}
+
+\begin{frame}{Extended hitting time and interpolated walks}
+  \begin{itemize}
+    \item Absorbing walk $P'=\begin{pmatrix}P_{UU}&P_{UM}\\0&I\end{pmatrix}$.
+    \item Interpolated walk $P(s)=(1-s)P+sP'$.
+    \item $\HTp=\lim_{s\to1}\HT(s)$ can be much larger than $\HT$ for multiple marked vertices.
+    \item AGJK: run the interpolated walk, or combine it with quantum fast-forwarding.
+  \end{itemize}
+\end{frame}
+
+\section{Cognitive Model}
+
+\begin{frame}{Graph to cognition}
+  \begin{itemize}
+    \item Vertices: concepts, evidence states, or options.
+    \item Edges: semantic associations or evidence transitions.
+    \item Marked set: target memory or decision boundary.
+    \item Success probability $p_M(t)$: target activation; first threshold crossing: response time.
+    \item Multiple marked sets: multi-alternative choice probabilities.
+  \end{itemize}
+\end{frame}
+
+\section{Methods}
+
+\begin{frame}{Experimental setup}
+  \begin{itemize}
+    \item Graphs: complete, cycle, 2D grid, hypercube, random regular, barbell.
+    \item Semantic graph: hand-built 19-node toy network.
+    \item Decision graphs: line and multi-branch.
+    \item Marked sets: single, independent, clustered, option sets.
+    \item Metrics: $T_q$, $p_{\max}$, $T_c$, speedup, choice probability, response time.
+  \end{itemize}
+\end{frame}
+
+\section{Results}
+
+\begin{frame}{Scaling}
+  \begin{itemize}
+    \item Classical versus quantum search time on at least two graph families.
+    \item Fit $T\sim N^\alpha$ and compare with $\sqrt{\HT}$.
+    \item Figure placeholder: classical and quantum scaling curves.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Multiple marked vertices}
+  \begin{itemize}
+    \item Compare single, independent, and clustered marked sets.
+    \item Look for the $\HTp$ penalty in success probability versus time.
+    \item Figure placeholder: success probability curves.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Semantic search and decoherence}
+  \begin{itemize}
+    \item Toy semantic graph: target activation for quantum and classical walks.
+    \item Partial measurement sweep: success probability and search time versus $p$.
+    \item Is there a nonzero optimal measurement rate?
+  \end{itemize}
+\end{frame}
+
+\section{Discussion}
+
+\begin{frame}{What the model explains and what it does not}
+  \begin{itemize}
+    \item Explains: process-level differences in search time and choice probability.
+    \item Does not explain: biological implementation or real behavioral data.
+    \item Algorithmic advantage is not a biological claim.
+    \item Limitations: synthetic graphs, small sizes, simplified noise.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Future work}
+  \begin{itemize}
+    \item Fit behavioral data with the decision-graph model.
+    \item ConceptNet subgraphs and larger semantic networks.
+    \item Open-system models beyond projective partial measurement.
+    \item Circuit implementation on small graphs.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item AGJK provides a rigorous search core for a cognitive process model.
+    \item Marked-set structure and decoherence are the key knobs.
+    \item The project connects quantum algorithms to testable model-level predictions.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{References}
+  \small
+  \begin{itemize}
+    \item Ambainis, Gily\'en, Jeffery, Kokainis, arXiv:1903.07493 (2019).
+    \item Chen, Ferro, Sornette, PLoS ONE 17(8), e0273551 (2022).
+    \item Huang, Busemeyer, ICCM 2022.
+    \item Pavone, Faro, Mathematics 13(19), 3171 (2025).
+  \end{itemize}
+\end{frame}
+
+\end{document}

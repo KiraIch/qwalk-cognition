@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{array}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+\usepackage{placeins}
+
+\newcommand{\HT}{\mathrm{HT}}
+\newcommand{\HTp}{\mathrm{HT}^{+}}
+\newcommand{\Otil}{\widetilde{O}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{conjecture}{Conjecture}
+
+\title{Quantum Walk Search for Marked Vertices as a Model of Cognitive Search:\\[0.3em]
+\large From Semantic Memory Retrieval to Multi-Alternative Decision Making}
+\author{[Student Name 1] \quad [Student ID 1]\\[0.2em]
+[Student Name 2] \quad [Student ID 2]}
+\date{EE5105 Special Topics in Quantum Information Science\\
+Instructor: Prof. Shih-Han Hung \quad Fall 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We use the Ambainis--Gily\'en--Jeffery--Kokainis (AGJK) marked-vertex search
+algorithm as the technical core of a process-level model of cognitive search.
+Numerically, the quantum search time scales as $T_q\sim \HT^{0.44\text{--}0.52}$
+on complete graphs, cycles, grids, and hypercubes, and independent targets are
+easier than clustered ones. A large extended-hitting-time gap appears only in
+the AGJK adversarial torus construction, not for generic clustered targets. On
+a toy semantic graph, continuous-time quantum walks produce larger and later
+target activation than classical diffusion, especially for cross-community
+targets. In a multi-alternative decision graph, coupling two options shifts the
+quantum choice probability toward the uncoupled option (from $1/3$ to $0.50$
+on a symmetric three-option graph), whereas the classical choice stays
+uniform; this holds only
+under phase-free readouts, and we show that a first-threshold readout is
+dominated by the oscillation phase. A partial-
+measurement sweep shows that the pure walk has the highest peak but needs it
+to be timed; when a measurement can end the search, an intermediate rate
+($p\approx0.2$--$0.3$) finds clustered targets by a moderate deadline with
+higher probability than either the pure quantum or the classical walk
+($0.45$ versus $0.33$ at $T=40$ on a grid).
+The project connects quantum-walk complexity to testable model-level predictions
+without claiming a biological quantum advantage.
+\end{abstract}
+
+\input{sections/01_introduction}
+\input{sections/02_background}
+\input{sections/03_theory}
+\input{sections/04_cognitive_model}
+\input{sections/05_methods}
+\input{sections/06_results}
+\input{sections/07_discussion}
+\input{sections/08_conclusion}
+
+\section*{AI Tool Usage}
+An AI coding assistant was used for code scaffolding, experiment automation,
+and LaTeX drafting. All technical derivations, experiment design, numerical
+results, and interpretations were checked by the authors. The AI tool was not
+used to generate research results or citations without verification.
+
+\appendix
+\input{sections/appendix}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}

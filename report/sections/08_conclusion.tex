@@ -1,0 +1,26 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This project used the AGJK marked-vertex search algorithm as the QIS core of a
+process-level model of cognitive search. We implemented the Szegedy and
+interpolated walks, verified the $\widetilde O(\sqrt{\HT})$ scaling on four
+graph families, and compared single, independent, and clustered targets. The
+main structural finding is that independent targets are easier, while clustered
+targets give only a modest reduction relative to a single target ($\approx3\%$
+on the barbell, $\approx17\%$ on the $8\times8$ grid); the large $\HT^+\gg\HT$ gap requires the
+adversarial periodic arrangement of AGJK rather than clustering alone. On the
+cognitive side, a toy semantic graph produced distance-dependent activation
+patterns, a multi-branch decision graph produced a robust similarity-like
+context effect under option coupling that the classical walk lacks, and a partial-measurement model showed
+that, beyond the shortest deadlines, an intermediate measurement rate that can
+stop the search finds clustered targets faster than both the pure quantum and
+the classical walk.
+
+The broader lesson is that the algorithmic structure of quantum walk search is
+a useful source of cognitive hypotheses. The marked-set structure, the
+extended hitting time, and the success curve are not merely complexity
+quantities; they define a process model with testable predictions. At the same
+time, the project is deliberately cautious: the results are numerical,
+model-level, and do not claim a biological quantum advantage. The next step is
+to test the same predictions on larger semantic networks and, eventually, on
+behavioral choice and response-time data.

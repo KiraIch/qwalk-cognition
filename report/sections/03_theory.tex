@@ -1,0 +1,180 @@
+\section{Theory}
+\label{sec:theory}
+
+\subsection{Reversible chains and the discriminant matrix}
+\label{sec:theory-discriminant}
+
+Let $P$ be an ergodic reversible Markov chain with stationary distribution
+$\pi$. The discriminant matrix is
+\begin{equation}
+  D_{xy}=\sqrt{P_{xy}P_{yx}},
+  \qquad
+  D=\mathrm{diag}(\pi)^{1/2}P\,\mathrm{diag}(\pi)^{-1/2}.
+  \label{eq:discriminant}
+\end{equation}
+For reversible $P$, $D$ is symmetric and has the same spectrum as $P$; the
+vector $\sqrt{\pi}$ is a left eigenvector with eigenvalue $1$. The Szegedy walk
+\eqref{eq:background-szegedy} satisfies
+\begin{equation}
+  \langle\bar0|\langle x|W(P)|\bar0\rangle|y\rangle=D_{xy}.
+\end{equation}
+The following standard spectral fact is used repeatedly. If
+$D=\sum_k\lambda_k|v_k\rangle\langle v_k|$, then the nontrivial eigenvalues of
+$W(P)$ are $e^{\pm i\theta_k}$ with $\lambda_k=\cos\theta_k$, and the
+corresponding eigenvectors lie in the span of
+$\{\lvert\bar0\rangle\lvert x\rangle\}_{x\in V}$ and its image under $V(P)$.
+This is the Szegedy spectral lemma; we use it as a statement and do not
+reprove it.
+
+\subsection{Classical and extended hitting times}
+\label{sec:theory-ht}
+
+For a marked set $M$ with stationary mass $p_M=\sum_{x\in M}\pi_x$, the
+classical hitting time can be written in spectral form as
+\begin{equation}
+  \HT(P,M)=\frac{1}{1-p_M}\sum_{k=1}^{n-|M|}
+  \frac{\lvert\langle v'_k\rvert\sqrt{\pi_U}\rangle\rvert^2}{1-\lambda'_k},
+  \label{eq:ht-spectral}
+\end{equation}
+where $\lambda'_k$ are the non-unit eigenvalues of $D(1)$ and
+$\sqrt{\pi_U}$ is the subnormalized vector with entries $\sqrt{\pi_x}$ for
+$x\notin M$.
+
+AGJK replace $D$ by the discriminant matrix $D(s)$ of the interpolated walk and
+define
+\begin{equation}
+  \HT(s)=\frac{1}{1-p_M}\sum_{k=1}^{n-1}
+  \frac{\lvert\langle v_k(s)\rvert\sqrt{\pi_U}\rangle\rvert^2}{1-\lambda_k(s)},
+  \qquad
+  \HTp=\lim_{s\to1}\HT(s),
+  \label{eq:ht-plus-theory}
+\end{equation}
+where $D(s)=\sum_k\lambda_k(s)|v_k(s)\rangle\langle v_k(s)|$ and
+$\lambda_n(s)=1$. For a single marked vertex, $\HTp=\HT$. For multiple marked
+vertices, \eqref{eq:ht-plus-theory} can be much larger than \eqref{eq:ht-spectral}.
+
+The canonical example is an $N\times N$ torus with marked set
+\begin{equation}
+  M=M_1\cup M_2,\qquad
+  M_1=\{(j_1d_1,j_2d_1):0\le j_1,j_2<k_1\},\quad
+  M_2=\{(j_1d,j_2d):0\le j_1,j_2<N/d\},
+  \label{eq:adversarial-set}
+\end{equation}
+with $d_1\mid d\mid N$ and the scale separation of AGJK. The set $M_1$ is a
+dense cluster and $M_2$ is a sparse periodic grid. For suitable parameters,
+$\HT=\widetilde O(d^2)$ while $\HTp=\Omega(N^2)$; this is AGJK's asymptotic
+statement. Our numerics ($L=18$--$36$) can show growth of $\HTp/\HT$ but cannot
+establish the asymptotic rate. The large gap comes from the
+periodic structure, not from the mere fact that $|M|>1$.
+
+\subsection{Interpolated walk and the numerical AGJK protocol}
+\label{sec:theory-interpolated}
+
+Let $U=V\setminus M$. The absorbing and interpolated walks are
+\begin{equation}
+  P'=\begin{pmatrix}P_{UU}&P_{UM}\\0&I\end{pmatrix},
+  \qquad
+  P(s)=(1-s)P+sP',\quad s\in[0,1).
+  \label{eq:interpolated-theory}
+\end{equation}
+The quantum version attaches a qubit that records whether the current vertex is
+marked. For $x\in U$, $V(P,s)$ acts as $V(P)$; for $x\in M$ it maps
+\begin{equation}
+  \lvert0\rangle\lvert\bar0\rangle\lvert x\rangle
+  \mapsto
+  \sqrt{1-s}\lvert0\rangle V(P)\lvert\bar0\rangle\lvert x\rangle
+  +\sqrt{s}\lvert1\rangle\lvert\bar0\rangle\lvert x\rangle.
+\end{equation}
+The interpolated walk operator is
+\begin{equation}
+  W(s)=V^\dagger(P,s)\,\mathrm{Shift}'\,V(P,s)\,\mathrm{Ref}',
+  \label{eq:interpolated-walk}
+\end{equation}
+with the controlled shift and reflection of AGJK. Its top-left block is
+$D(s)$.
+
+Algorithm~1 of AGJK prepares $\lvert\bar0\rangle\lvert\sqrt{\pi}\rangle$,
+applies $W(s)$ for $t$ steps, and measures the marking ancilla. If the ancilla
+is $1$, a position measurement returns a candidate marked vertex. The key
+numerical object is the lower bound
+\begin{equation}
+  q_t(s)=\left\lVert\Pi_M T_t(D(s))\lvert\sqrt{\pi}\rangle\right\rVert^2
+  \le
+  \left\lVert(I\otimes\Pi_M)W^t(s)\lvert\bar0\rangle\lvert\sqrt{\pi}\rangle
+  \right\rVert^2,
+  \label{eq:chebyshev}
+\end{equation}
+where $T_t$ is the Chebyshev polynomial of the first kind. The identity behind
+\eqref{eq:chebyshev} is
+\begin{equation}
+  \Pi_0W^t(s)\Pi_0
+  =\lvert\bar0\rangle\langle\bar0\rvert\otimes T_t(D(s)),
+  \qquad
+  \Pi_0=\lvert\bar0\rangle\langle\bar0\rvert\otimes I.
+\end{equation}
+In our numerical protocol we scan $s$ over a fixed grid and choose the value
+that maximizes $\max_t q_t(s)$ over $t\le3\sqrt{\HT}+5$. We then run the exact
+operator $W(s)$ and record the actual success curve $p_M(t)$. This tests the
+numerical content of Conjecture~3 of AGJK without assuming it.
+
+For completeness, the proved AGJK algorithm combines the interpolated walk with
+quantum fast-forwarding and runs in time
+\begin{equation}
+  O\!\left(S\sqrt{\log\HT}
+  +\sqrt{\HT}(U+C)\sqrt{\log\HT\log\log\HT}\right),
+  \label{eq:agjk-theorem}
+\end{equation}
+where $S$, $U$, and $C$ are the costs of setup, update, and checking. We cite
+\eqref{eq:agjk-theorem} as the theoretical guarantee; our experiments use the
+simpler Algorithm~1.
+
+\subsection{Partial measurement}
+\label{sec:theory-measurement}
+
+The decoherence model is a position measurement with probability $p$ before
+each unitary step. Let
+$\Pi_x=I\otimes\lvert x\rangle\langle x\rvert$ be the projector onto vertex
+$x$ and let $R_x=\lvert\bar0\rangle\lvert x\rangle$ be the reset state. The
+one-step channel is
+\begin{equation}
+  \rho_{t+1}
+  =W(0)\left[(1-p)\rho_t+p\sum_xR_x\langle R_x|\rho_t|R_x\rangle\langle R_x|\right]W(0)^\dagger .
+  \label{eq:measurement-channel}
+\end{equation}
+For $p=0$ this is the pure quantum walk. For $p=1$ the state is reset to a
+position basis state at every step; the position distribution then follows the
+classical Markov chain
+\begin{equation}
+  Q_{xy}=\left\lVert\Pi_yW(0)\lvert\bar0\rangle\lvert x\rangle\right\rVert^2.
+\end{equation}
+For $s=0$, $Q=P$ and the measured walk is exactly the classical random walk.
+
+Because \eqref{eq:measurement-channel} is linear in $\rho$, the average success
+probability can be computed without Monte Carlo. We precompute the pure states
+$\lvert\phi_{x,a}\rangle=W(0)^a\lvert\bar0\rangle\lvert x\rangle$ and their
+position marginals and marked masses. A trajectory is summarized by the
+probability $q_0$ that no measurement has occurred and by the distribution
+$q_{x,a}$ over the last reset vertex $x$ and age $a$. The update is a small
+linear recursion; the success probability is the corresponding mixture of the
+precomputed marked masses. The details are in \cref{app:measurement}.
+
+\subsection{Continuous-time walks on semantic graphs}
+\label{sec:theory-ctqw}
+
+For the semantic experiment we use the symmetric normalized Laplacian
+\begin{equation}
+  L_{\mathrm{sym}}=I-D^{-1/2}AD^{-1/2}
+\end{equation}
+and the random-walk generator
+$L_{\mathrm{rw}}=I-D^{-1}A$. The CTQW and CRW are
+\begin{equation}
+  \lvert\psi(t)\rangle=e^{-iL_{\mathrm{sym}}t}\lvert c\rangle,
+  \qquad
+  \rho(t)=\rho(0)e^{-L_{\mathrm{rw}}t},
+  \label{eq:ctqw-crw-theory}
+\end{equation}
+where $c$ is the cue vertex. The eigenvalues of $L_{\mathrm{sym}}$ and
+$L_{\mathrm{rw}}$ coincide, so comparing at $\tau=\lambda_1t$ aligns the two
+relaxation scales. The target activation is
+$p_T(t)=\lvert\langle T\vert\psi(t)\rangle\rvert^2$ for CTQW and
+$p_T(t)=\rho_T(t)$ for CRW.
