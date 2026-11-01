@@ -68,3 +68,12 @@ def test_deadline_robustness_metrics():
     assert np.isclose(deadline_win_rate(flat, curve, 4), 0.5)
     with pytest.raises(ValueError):
         time_averaged_success(curve, 5)
+
+
+def test_power_law_fit_reports_confidence_interval():
+    x = np.array([8.0, 16.0, 32.0, 64.0])
+    y = x**0.5 * np.array([1.0, 1.05, 0.97, 1.02])
+    fit = power_law_fit(x, y)
+    low, high = fit["exponent_ci95"]
+    assert low < 0.5 < high
+    assert fit["exponent_se"] > 0.0

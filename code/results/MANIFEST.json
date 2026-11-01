@@ -1,0 +1,43 @@
+{
+  "generated_utc": "2026-11-01T16:50:09+00:00",
+  "git_head": "131fd3032ecb4aaee9bdb69429cd7d2f54896c48",
+  "git_dirty": true,
+  "python": "3.13.13",
+  "packages": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "networkx": "3.7",
+    "pandas": "3.0.6",
+    "matplotlib": "3.11.2",
+    "pyyaml": "6.0.3"
+  },
+  "configs": {
+    "base.yaml": "80470a1a8af398c2a56f38fe9c1085bec9650c8eaa520e1b48d31d5bbb7380ef",
+    "experiments.yaml": "4d5d9433dc33539cb8c05337caf918394088b43bdf71b22c1d38f76b6ed8df92"
+  },
+  "results": {
+    "results/processed/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "results/processed/E1_scaling.json": "dc3418c6046e5ea6f10f1480605ae1a7d8c8644dbd96c99c8d78f1b981b22031",
+    "results/processed/E2_adversarial_torus.json": "8e366b48875f3f2f0834e97ccb1abbdae7cdd79ea9fa11c1bc246e44bf73f221",
+    "results/processed/E2_marked.json": "7663cc24cbe6b36c1a4f620e4da5bcd060e11a6b3b01b988d4c9227920196cda",
+    "results/processed/E3_semantic.json": "61684237236b635502563464c9a3158b2ff6631834564f9136b73da0c4a0b256",
+    "results/processed/E4_decision.json": "ca0c59b502b3ee948d7e72f89e5e807c467db47acad8b6c17e4e89a6a12c86c3",
+    "results/processed/E4_robustness.json": "efd0892a45b6514c6aa3edca4386549e4180ec0ef4363c119f43af9384c73f88",
+    "results/processed/E5_decoherence.json": "c763b2a258c6d394a9351cf0f86138cfe6d41fb456877e34b1e55a7d6ce5683a",
+    "results/processed/E6_smallworld.json": "efdf8b1abf8a671b87f330e78e48d64f187dd0fe0ca178d11a031b9a65066712",
+    "results/raw/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "results/raw/E1_scaling.csv": "142292ec1ae56ee4385b27280787331f47b69f340c01ba874648e07756c1387c",
+    "results/raw/E2_adversarial_torus.csv": "ace6cef7aece3f89e4432219f43641ea3050f71f108c5a0a888099ab591134a4",
+    "results/raw/E2_curves.csv": "bcc772d29b6fcdf42c020120d98e00acbc4b6cb519ba755203659fd86ae29aec",
+    "results/raw/E2_marked.csv": "548b6aff9fde96a6ee6bb31d5c39f19c240d765a6075cbc550e6453798a40e5d",
+    "results/raw/E3_semantic_curves.csv": "48cf537f8ea84d7087a72ba0c520941484710b4b8ed23677aa2cf0ea06503a46",
+    "results/raw/E3_semantic_metrics.csv": "0ee2a6ba93aaafe0b0566e476fef5307fd8d574f2ed8a43e587247fa3e5b71d9",
+    "results/raw/E4_choices.csv": "ddc8380417a1b687554e6ba6cbfe7debf0c56005a4199d1e313bca406931bdc8",
+    "results/raw/E4_curves.csv": "7eaa0bb41734aee51aeadcd82e7c6583578ce14990b30c9034b89f4406c69fed",
+    "results/raw/E4_metrics.csv": "bed8f7e29b3d59e185d3546a7af680591a8ba0fe3890b579fcc10669592eed3f",
+    "results/raw/E4_robustness.csv": "2166e2a07b722ab4b165a4fc0eefd1a1daa2c86bd5b16a2fb9bb22f99ec61ff0",
+    "results/raw/E5_curves.csv": "aa19ac7dbd5c63800dff192144b864103ce9c0bd87e4e4f8e3c9ec3a686d288e",
+    "results/raw/E5_sweep.csv": "ec8eefe1ad6eb82e88625ad820a4e1841cbffa96ca70aa50c126e6f5d8ed74d4",
+    "results/raw/E6_smallworld.csv": "f6e1310c14a7d27cc3960bb397515849f436317b6e6fe8d4dd6af0fe0b888fe4"
+  }
+}

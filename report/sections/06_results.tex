@@ -42,6 +42,12 @@ low-probability fluctuations.
   \label{tab:scaling}
 \end{table}
 
+All four exponents of $T_q$ against $\HT$ have 95\% confidence intervals that
+contain $1/2$: complete $0.50$ $[0.41,0.59]$, cycle $0.52$ $[0.51,0.54]$, grid
+$0.48$ $[0.39,0.57]$, and hypercube $0.44$ $[0.32,0.55]$. The intervals come from
+a $t$-distribution with $N-2$ degrees of freedom and are wide because each
+family has only four sizes.
+
 The cycle is the clearest illustration: its classical hitting time grows almost
 quadratically ($\alpha=1.95$), while the quantum search time grows almost
 linearly ($\beta=1.02$), giving a speedup that reaches $11.7\times$ at $N=64$.
@@ -59,58 +65,64 @@ $T_q\in\{6,8,11,16\}$ this fit is the least precise of the four.
 \label{sec:results-e2}
 
 \Cref{fig:e2-success} compares success-probability curves for single,
-independent, and clustered marked sets. The independent configuration is
-consistently the easiest: on the $8\times8$ grid its mean $\HT$ is $34.7$,
-versus $95.5$ for a single target and $79.5$ for a cluster of four. The same
-pattern is much stronger on the barbell graph, where independent targets reduce
-the hitting time from $2558$ to $16.8$ at $n_{\mathrm{each}}=16$. Clustered
-targets give only a modest reduction relative to a single target ($\approx3\%$
-on the $n=16$ barbell, $\approx17\%$ on the $8\times8$ grid), far less than
-independent targets: once the walker reaches the cluster it still has to find
-one of its vertices.
+independent, and clustered marked sets. Each configuration uses every distinct
+set produced by farthest-point or BFS sampling with seeds $0,\dots,19$; this
+gives $14$--$18$ distinct sets per configuration (the single target has one).
+Every independent set is easier than every clustered set on all four graphs:
+the largest independent $\HT$ lies below the smallest clustered $\HT$ in each
+case. Independent sets are also much faster than a single target. On the
+$n=16$ barbell the median independent $\HT$ is $16.8$, against $2558$ for one
+target. Clustering does not reliably reduce the hitting time. On the $n=16$
+barbell the cluster median ($2768$) lies above the single-target value, with a
+range of $0.74$--$1.09$ times it; on the $8\times8$ grid the range is
+$0.43$--$1.37$ times the single-target value (median $0.89$). Whether a cluster
+is easier or harder than one target depends on where it sits relative to the
+graph's bottleneck, not only on the number of marked vertices.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/fig_e2_success.pdf}
   \caption{Success probability versus walk steps for single, independent, and
-  clustered marked sets. Shaded bands show the min--max range over three seeds
-  (two distinct sets on the $6\times6$ grid and the barbell graphs). Independent targets peak earlier and remain easier; clustered
-  targets follow the single-target curve.}
+  clustered marked sets (medians over distinct sets; shaded bands show the
+  min--max range over sets). Independent targets peak earlier and remain
+  easier; clustered targets are slower than independent ones and can be slower
+  or faster than the single target.}
   \label{fig:e2-success}
 \end{figure}
 
 \begin{table}[t]
   \centering
   \small
-  \begin{tabular}{@{}llcccc@{}}
+  \begin{tabular}{@{}llccccc@{}}
     \toprule
-    Graph & Marked set & mean $\HT$ & mean $\HT^+$ & $\HT^+/\HT$ & mean $T_q$ \\
+    Graph & Marked set & sets & median $\HT$ [min, max] & median $\HT^+/\HT$ & max $\HT^+/\HT$ & median $T_q$ \\
     \midrule
-    Grid $8\times8$ & single & 95.5 & 95.5 & 1.00 & 17.0 \\
-    Grid $8\times8$ & independent & 34.7 & 35.3 & 1.02 & 10.7 \\
-    Grid $8\times8$ & clustered & 79.5 & 85.3 & 1.07 & 20.3 \\
-    Barbell $n=16$ & single & 2558.0 & 2557.9 & 1.00 & 134.0 \\
-    Barbell $n=16$ & independent & 16.8 & 25.4 & 1.52 & 7.0 \\
-    Barbell $n=16$ & clustered & 2478.6 & 2507.4 & 1.01 & 115.3 \\
+    Grid $8\times8$ & single & 1 & 95.5 & 1.00 & 1.00 & 17 \\
+    Grid $8\times8$ & independent & 18 & 34.8 [26.9, 39.7] & 1.02 & 1.05 & 10 \\
+    Grid $8\times8$ & clustered & 18 & 85.0 [41.5, 131.1] & 1.06 & 1.09 & 20 \\
+    Barbell $n=16$ & single & 1 & 2558.0 & 1.00 & 1.00 & 134 \\
+    Barbell $n=16$ & independent & 18 & 16.8 [16.4, 415.1] & 1.53 & 2.94 & 7 \\
+    Barbell $n=16$ & clustered & 16 & 2768.0 [1893.1, 2781.3] & 1.00 & 1.04 & 133 \\
     \bottomrule
   \end{tabular}
-  \caption{Selected E2 results. Means are over three seeds (0, 1, 2) of farthest-point sampling for the
-  independent and clustered configurations; for the $6\times6$ grid and the
-  barbell graphs ($n=8,16$) seeds 0 and 2 give the same set, so only two
-  distinct sets enter those means.}
+  \caption{Selected E2 results. Single targets have one set; the other rows
+  summarize all distinct sets from seeds $0,\dots,19$.}
   \label{tab:e2}
 \end{table}
 
 \Cref{fig:e2-ht} places classical hitting times against extended hitting times.
-For the grid and barbell cases the two quantities are close: the largest ratio
-is $1.52$ for independent targets on the barbell, where several targets sit in
-different communities. The right panel shows the AGJK adversarial torus
-construction, where the ratio grows from $5.5$ at $L=18$ to $8.8$ at $L=36$,
-consistent with growth but too small a range to establish the asymptotic rate.
-This confirms that a large $\HT^+$ penalty is a structural phenomenon: it
-requires a particular arrangement of marked vertices, not merely clustering.
-For $L=18$ the interpolated walk still reaches $p_{\max}=0.978$ at $t=6$, so the
-Conjecture~3 numerical protocol is not slowed down by the large $\HT^+$ value.
+For clustered sets and for most independent sets the two are within a few
+percent. The exception is the independent barbell configuration: 17 of its 18
+sets have $\HT^+/\HT$ between $1.35$ and $1.53$, and one set, $\{0,21,25,29\}$,
+reaches $2.94$ (with $\HT=415$, still six times below the single-target value).
+So a moderate $\HT^+$ penalty can arise from a specific independent arrangement
+without the adversarial construction. The right panel shows the AGJK adversarial
+torus, where the ratio grows from $5.5$ at $L=18$ to $8.8$ at $L=36$. This is the
+only family in our data where the penalty grows with size. The growth is
+consistent with AGJK's $\Omega(N^2)$ statement, but a range of $L\le36$ cannot
+establish the asymptotic rate. For $L=18$ the interpolated walk still reaches
+$p_{\max}=0.978$ at $t=6$, so the numerical protocol is not slowed down by the
+large $\HT^+$ value.
 
 \begin{figure}[t]
   \centering
@@ -129,10 +141,13 @@ Conjecture~3 numerical protocol is not slowed down by the large $\HT^+$ value.
 \Cref{fig:e3} shows the toy semantic graph and the target activation from the
 cue \texttt{animal} to two targets: \texttt{dog} (distance $1$) and
 \texttt{violin} (distance $4$). The spectral gap is $\lambda_1=0.0333$, giving a
-relaxation time of $30.0$ steps. For the near target the CTQW peak is $0.237$ at
-$\tau=4.75$, compared with a CRW peak of $0.158$ at $\tau=0.13$. For the far
-target the gap is larger: CTQW reaches $0.247$ at $\tau=6.86$, while the CRW
-only reaches $0.046$, essentially its stationary value.
+relaxation time of $30.0$ steps. Peaks are taken over $\tau\le50$. For the near
+target the CRW peaks early, at $0.158$ with $\tau=0.13$, and then decays to its
+stationary value $0.061$. The CTQW peak is larger and later, $0.337$ at
+$\tau=47.5$; the window does not change this peak for $\tau\ge50$. For the far
+target the CTQW peaks at $0.268$ with $\tau=19.3$. The CRW has no interior peak:
+it rises monotonically to its stationary value $\pi_{\text{violin}}=0.046$, which
+is reached by $\tau\approx 8$.
 
 \begin{figure}[t]
   \centering
@@ -144,14 +159,16 @@ only reaches $0.046$, essentially its stationary value.
   \label{fig:e3}
 \end{figure}
 
-The activation curves show a clear semantic-distance effect. For the near
-target the CRW has a higher area under the curve ($0.580$ versus $0.481$)
-because it activates the neighbor immediately and then relaxes. For the far
-target the CTQW has a higher AUC ($0.360$ versus $0.324$) and a much higher
-peak, while the CRW spreads almost uniformly. The expected radius at the CTQW
-peak is also larger ($2.99$ versus $2.36$), indicating that the quantum walk
-maintains a broader, more coherent activation pattern instead of collapsing
-onto the local neighborhood.
+The CTQW curves oscillate strongly (\cref{fig:e3}), so a CTQW peak is the largest
+of many recurrences and depends on the window; the dog peak at $\tau=47.5$ is a
+single spike. The AUC over $\tau\le8$ is the more stable comparison.
+
+The activation curves show a clear semantic-distance effect. AUCs are computed
+over $\tau\le8$ so that they do not depend on the longer peak window. For the
+near target the CRW has a higher AUC ($0.579$ versus $0.481$) because it
+activates the neighbor immediately and then relaxes. For the far target the
+CTQW has a higher AUC ($0.360$ versus $0.323$) and a much higher peak, while
+the CRW never peaks above its stationary value.
 
 \FloatBarrier
 \subsection{Multi-alternative choice under coupling (E4)}
@@ -295,6 +312,42 @@ highest peak, the classical walk accumulates detections reliably, and a
 partially coherent search combines fast spreading with the ability to stop
 once the target is seen. The last option wins when the target is extended
 (a cluster of related concepts) and the deadline is moderate.
+
+\FloatBarrier
+\subsection{Small-world and scale-free graphs (E6)}
+\label{sec:results-e6}
+
+E1 uses regular graphs. E6 asks whether the $\sqrt{\HT}$ law survives on
+graphs that resemble semantic networks: Watts--Strogatz small-world graphs with
+$N\in\{32,64\}$, $k=4$, and rewiring probability $\beta\in\{0,0.05,0.2,1\}$, and
+Barab\'asi--Albert scale-free graphs with $m=2$. Each configuration uses five
+random seeds. The marked vertex is either the highest-degree (``hub'') or the
+lowest-degree (``peripheral'') vertex, giving $100$ graph--target instances in
+total. Over all instances the quantum search time follows
+$T_q\sim\HT^{0.52}$ (95\% CI $[0.49,0.54]$, $R^2=0.94$). The exponent is
+slightly above $1/2$ on the small-world family ($0.54$, $80$ instances) and
+slightly below on the scale-free family ($0.45$, $20$ instances).
+
+Rewiring shortens classical hitting times for hub targets from $91$ to $25$
+($N=32$) and from $334$ to $52$ ($N=64$). Their quantum speedup falls from
+$4.3$ to $2.7$ and from $8.0$ to $4.0$. Peripheral targets are harder
+classically, and their speedup stays between about $4$ and $9$, with a
+non-monotone dependence on $\beta$. On scale-free graphs the contrast is
+largest: hub targets have $\HT\approx11$--$20$ and speedup $1.8$--$2.4$, while
+peripheral targets have $\HT\approx143$--$298$ and speedup $6.8$--$11.5$. Across
+all instances $\log T_q$ tracks $\log\HT$ closely (correlation of
+$\log\HT$ and $\log(\HT/T_q)$ is $0.96$). The quantum advantage is therefore
+largest where the classical search is hardest, which is the same pattern as E1.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/fig_e6_smallworld.pdf}
+  \caption{Small-world graphs. Left: classical hitting time versus rewiring
+  probability. Right: speedup $\HT/T_q$. Points are medians and bars give the
+  range over five seeds. At $\beta=0$ the ring is regular, so hub and
+  peripheral targets coincide.}
+  \label{fig:e6}
+\end{figure}
 
 \FloatBarrier
 \subsection{Summary of empirical findings}

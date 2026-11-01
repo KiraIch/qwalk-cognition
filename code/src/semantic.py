@@ -77,12 +77,24 @@ def semantic_metrics(
     graph: nx.Graph,
     cue: int,
     gap: float,
+    auc_tau: float | None = None,
 ) -> dict[str, float]:
+    """Activation summary for one target.
+
+    The peak is the global maximum over `times`. `peak_interior` is True only
+    if that maximum is not on an end point and the curve later falls below
+    (1 - 1%) of it; a plateau approaching stationarity (argmax on rounding
+    noise) therefore counts as "no peak". The AUC is taken
+    over tau <= auc_tau (default: the whole window) so that it does not depend
+    on how long the window is.
+    """
     times = np.asarray(times, dtype=float)
     curve = trajectory[target]
     peak = int(np.argmax(curve))
     p_peak = float(curve[peak])
     t_peak = float(times[peak])
+    early = gap * times <= (np.inf if auc_tau is None else auc_tau)
+    early_auc = float(np.trapezoid(curve[early], times[early]) * gap)
     distribution = np.abs(trajectory[:, peak])
     distribution = distribution / distribution.sum()
     distances = nx.single_source_shortest_path_length(graph, cue)
@@ -93,7 +105,10 @@ def semantic_metrics(
         "p_peak": p_peak,
         "t_peak": t_peak,
         "tau_peak": gap * t_peak,
-        "auc": float(np.trapezoid(curve, times) * gap),
+        "auc": early_auc,
+        "peak_interior": bool(
+            0 < peak < times.size - 1 and curve[peak:].min() < 0.99 * p_peak
+        ),
         "entropy_peak": entropy(distribution),
         "coverage_half_peak": float(np.mean(distribution >= 0.5 * p_peak)),
         "expected_radius_peak": radius,

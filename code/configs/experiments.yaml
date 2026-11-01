@@ -16,7 +16,7 @@ experiments:
       barbell: {n_each: [8, 16]}
     marked: [single, independent, clustered]
     marked_size: 4
-    seeds: [0, 1, 2]
+    seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # duplicate sets are dropped
     adversarial_torus:
       simulate_max_length: 18
       laziness: 0.2  # AGJK construction
@@ -34,8 +34,9 @@ experiments:
     marked: single
     cue: animal
     targets: [dog, violin]
-    time_window_relaxation: 8.0
-    n_time_points: 1200
+    time_window_relaxation: 50.0  # tau window for peaks; dog's CTQW maximum is at tau~47
+    auc_window_relaxation: 8.0  # AUC is reported over tau <= 8 (early activation)
+    n_time_points: 6000  # dt ~ 0.25 steps; CTQW oscillates with period ~3 steps
     noise: none
     priority: must
   E4:
@@ -55,6 +56,18 @@ experiments:
       jitter_seeds: 10
     noise: none
     priority: should
+  E6:
+    name: small_world_and_scale_free
+    watts_strogatz:
+      n: [32, 64]
+      k: 4
+      beta: [0.0, 0.05, 0.2, 1.0]
+    barabasi_albert:
+      n: [32, 64]
+      m: 2
+    seeds: [0, 1, 2, 3, 4]
+    targets: [hub, peripheral]  # highest- and lowest-degree vertex
+    priority: could
   E5:
     name: decoherence_sweep
     # Walk is W(0) of the lazy chain P_eta (eta = 0.1), i.e. interpolation s = 0.

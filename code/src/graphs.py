@@ -16,6 +16,16 @@ def cycle_graph(n: int) -> nx.Graph:
     return nx.cycle_graph(n)
 
 
+def connected_watts_strogatz(n: int, k: int, beta: float, seed: int | None = None) -> nx.Graph:
+    """Connected small-world graph: ring with k neighbours, each edge rewired with probability beta."""
+    return nx.connected_watts_strogatz_graph(n, k, beta, tries=200, seed=seed)
+
+
+def barabasi_albert(n: int, m: int, seed: int | None = None) -> nx.Graph:
+    """Scale-free graph by preferential attachment; always connected for m >= 1."""
+    return nx.barabasi_albert_graph(n, m, seed=seed)
+
+
 def grid_graph(length: int) -> nx.Graph:
     return nx.convert_node_labels_to_integers(nx.grid_2d_graph(length, length))
 

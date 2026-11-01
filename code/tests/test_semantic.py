@@ -67,3 +67,29 @@ def test_toy_semantic_graph_communities_are_connected():
     assert nx.is_connected(graph)
     concepts = {data["concept"] for _, data in graph.nodes(data=True)}
     assert {"dog", "violin", "airplane"}.issubset(concepts)
+
+
+def test_monotone_curve_has_no_interior_peak():
+    times = np.linspace(0.0, 10.0, 101)
+    trajectory = np.vstack([np.linspace(0.0, 1.0, times.size), np.zeros(times.size)])
+    metrics = semantic_metrics(trajectory, times, 0, toy_semantic_graph(), 0, 1.0)
+    assert metrics["peak_interior"] is False
+    assert np.isclose(metrics["t_peak"], 10.0)
+
+
+def test_plateau_at_stationarity_is_not_a_peak():
+    times = np.linspace(0.0, 10.0, 101)
+    plateau = 0.5 + 1e-9 * np.sin(np.arange(times.size))
+    trajectory = np.vstack([np.concatenate([np.linspace(0.0, 0.5, 50), plateau[50:]]), np.zeros(times.size)])
+    metrics = semantic_metrics(trajectory, times, 0, toy_semantic_graph(), 0, 1.0)
+    assert metrics["peak_interior"] is False
+
+
+def test_auc_window_limits_integration_range():
+    times = np.linspace(0.0, 20.0, 2001)
+    trajectory = np.vstack([np.ones(times.size), np.zeros(times.size)])
+    graph = toy_semantic_graph()
+    full = semantic_metrics(trajectory, times, 0, graph, 0, 1.0)
+    early = semantic_metrics(trajectory, times, 0, graph, 0, 1.0, auc_tau=5.0)
+    assert np.isclose(full["auc"], 20.0)
+    assert np.isclose(early["auc"], 5.0)

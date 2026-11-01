@@ -60,12 +60,14 @@ core, the graph model, and the cognitive quantities derived from the walk.
 The project makes four contributions. First, we implement the Szegedy walk,
 the interpolated walk $W(s)$, and the AGJK extended hitting time, and we verify
 the $\widetilde O(\sqrt{\HT})$ scaling numerically on complete graphs, cycles,
-grids, and hypercubes. Second, we compare single, independent, and clustered
-marked sets. We show that independent targets are easier, that clustered
-targets give only a modest reduction of the hitting time relative to a single
-target ($\approx3\%$ on the barbell, $\approx17\%$ on the $8\times8$ grid), and that the dramatic $\HT^+\gg\HT$ gap
-requires the adversarial periodic arrangement of AGJK rather than clustering
-alone. Third, we build a semantic graph and a multi-branch decision graph and
+grids, and hypercubes, and on small-world and scale-free graphs. Second, we
+compare single, independent, and clustered marked sets. Every independent set
+is easier than every clustered set, while clustered sets can be easier or
+harder than a single target depending on their placement. The extended
+hitting time exceeds the classical one substantially only in special
+arrangements: it grows with size only for the adversarial periodic construction
+of AGJK, and a moderate gap of $2.9$ appears for one independent set on a
+barbell graph. Third, we build a semantic graph and a multi-branch decision graph and
 turn the walk statistics into target activation, response time, and choice
 probability. Fourth, we add a partial-measurement model and show that
 single-deadline comparisons are dominated by the phase of the quantum
@@ -78,5 +80,5 @@ The paper is organized as follows. \Cref{sec:background} reviews classical and
 quantum walks and the quantum cognition literature. \Cref{sec:theory} collects
 the formal definitions and the AGJK results we use. \Cref{sec:cognitive-model}
 states the cognitive mapping and its assumptions. \Cref{sec:methods} describes
-the graph families, protocols, and metrics. \Cref{sec:results} reports E1--E5.
+the graph families, protocols, and metrics. \Cref{sec:results} reports E1--E6.
 \Cref{sec:discussion} discusses interpretation, limitations, and future work.

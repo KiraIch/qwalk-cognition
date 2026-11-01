@@ -39,3 +39,12 @@ figures, commits, and experiment IDs.
 6. New papers: 無。
 7. Code: 測試由 47 增為 61，全部通過。新增 `Explain_v2.md`（新版完整解說）與 `MASTER_PLAN.md`。
 8. Report: 論文 `report/sections` 已同步 E1、E2、E4、E5 新數字與措辭（摘要、Methods、Results、Discussion、Conclusion、附錄）；PDF 尚未重新編譯（本機無 LaTeX）。
+
+### Week 2 addendum (2026-11-02)
+
+- A3 (E3 window): 峰值改在 $\tau\le50$ 內取；CTQW 狗的峰值由 0.237（$\tau=4.75$，舊 $\tau\le8$ 窗內最大值）更正為 0.337（$\tau=47.5$，全域最大）。古典 violin 的「峰值」是單調趨近穩態 $\pi=0.046$ 的平台，改以 `peak_interior` 標記為無峰。AUC 固定在 $\tau\le8$。
+- A4 (E2, E1): E2 改為 seeds 0–19 並去除重複集合（14–18 個不同集合）。修正：每個獨立集合都比每個群聚集合容易；群聚集合相對單一目標可快可慢（網格 8×8 為 0.43–1.37 倍）；獨立 barbell $n=16$ 有一個集合 $\HT^+/\HT=2.94$，原論文的 1.52 來自只有兩個不同集合的平均。E1 指數加入 95% 信賴區間（全部包含 1/2）。
+- E6 (WS/BA 小世界與無尺度圖): 完成實作、測試與圖；$T_q\sim\HT^{0.52}$（95% CI [0.49, 0.54]，100 個圖–目標實例）；無尺度圖指數 0.45，小世界 0.54。
+- B2/B3: `configs/base.yaml` 只保留被讀取的鍵，`tests/test_config.py` 防止再漂移；新增 `Makefile`（`make all`）與 `src/manifest.py`（`results/MANIFEST.json`，含 git 狀態）。
+- 全部重跑 E1–E6；論文 E1、E2、E3、E6 與摘要、Introduction、Discussion、Conclusion、附錄同步。測試 71 個，全部通過。報告 PDF 重新編譯為 29 頁，無未定義引用。
+- 待辦：`Explain_v2.md`、`Result.md`、`Explain.md`、`RESULTS_SUMMARY.md` 中的 E2、E3 數字仍是舊版，尚未同步。

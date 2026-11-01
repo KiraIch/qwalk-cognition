@@ -4,11 +4,12 @@
 This project used the AGJK marked-vertex search algorithm as the QIS core of a
 process-level model of cognitive search. We implemented the Szegedy and
 interpolated walks, verified the $\widetilde O(\sqrt{\HT})$ scaling on four
-graph families, and compared single, independent, and clustered targets. The
-main structural finding is that independent targets are easier, while clustered
-targets give only a modest reduction relative to a single target ($\approx3\%$
-on the barbell, $\approx17\%$ on the $8\times8$ grid); the large $\HT^+\gg\HT$ gap requires the
-adversarial periodic arrangement of AGJK rather than clustering alone. On the
+graph families, including small-world and scale-free graphs, and compared
+single, independent, and clustered targets. The main structural finding is that
+every independent set is easier than every clustered set, while clustered sets
+can be easier or harder than a single target. The large $\HT^+\gg\HT$ gap
+requires the adversarial periodic arrangement of AGJK; a moderate gap also
+appears for one independent set on a barbell graph. On the
 cognitive side, a toy semantic graph produced distance-dependent activation
 patterns, a multi-branch decision graph produced a robust similarity-like
 context effect under option coupling that the classical walk lacks, and a partial-measurement model showed

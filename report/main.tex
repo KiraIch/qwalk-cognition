@@ -47,9 +47,12 @@ Instructor: Prof. Shih-Han Hung \quad Fall 2026}
 We use the Ambainis--Gily\'en--Jeffery--Kokainis (AGJK) marked-vertex search
 algorithm as the technical core of a process-level model of cognitive search.
 Numerically, the quantum search time scales as $T_q\sim \HT^{0.44\text{--}0.52}$
-on complete graphs, cycles, grids, and hypercubes, and independent targets are
-easier than clustered ones. A large extended-hitting-time gap appears only in
-the AGJK adversarial torus construction, not for generic clustered targets. On
+on complete graphs, cycles, grids, and hypercubes, and on small-world and
+scale-free graphs with exponent $0.52$. Every independent marked set is easier
+than every clustered one, while clustered sets can be easier or harder than a
+single target. The extended-hitting-time gap grows with size only in the AGJK
+adversarial torus construction (up to $8.8$ at $L=36$); one independent set on a
+barbell graph shows a gap of $2.9$. On
 a toy semantic graph, continuous-time quantum walks produce larger and later
 target activation than classical diffusion, especially for cross-community
 targets. In a multi-alternative decision graph, coupling two options shifts the

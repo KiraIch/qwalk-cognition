@@ -630,3 +630,45 @@ def plot_e4_robustness(frame, path: str | Path) -> None:
     figure.suptitle("E4: readout robustness under option coupling", fontsize=10)
     save_figure(figure, path)
     plt.close(figure)
+
+
+
+def _median_range(values):
+    values = np.asarray(values, dtype=float)
+    median = float(np.median(values))
+    return median, median - float(values.min()), float(values.max()) - median
+
+
+def plot_e6_smallworld(frame, path: str | Path) -> None:
+    set_style()
+    figure, axes = plt.subplots(1, 2, figsize=(7.4, 3.2))
+    ws = frame[frame["family"] == "watts_strogatz"]
+    styles = {"hub": ("#c55a11", "-"), "peripheral": ("#1f4e79", "--")}
+    for n_vertices, marker in ((32, "o"), (64, "s")):
+        for target, (color, linestyle) in styles.items():
+            subset = ws[(ws["n"] == n_vertices) & (ws["target"] == target)]
+            betas = sorted(subset["parameter"].unique())
+            for axis, column in ((axes[0], "HT"), (axes[1], "speedup")):
+                stats = [_median_range(subset[subset["parameter"] == beta][column]) for beta in betas]
+                axis.errorbar(
+                    betas,
+                    [item[0] for item in stats],
+                    yerr=[[item[1] for item in stats], [item[2] for item in stats]],
+                    color=color,
+                    linestyle=linestyle,
+                    marker=marker,
+                    markersize=3,
+                    capsize=2,
+                    label=f"N={n_vertices}, {target}",
+                )
+    for axis, ylabel in ((axes[0], "classical hitting time HT"), (axes[1], r"speedup $HT/T_q$")):
+        axis.set_xscale("symlog", linthresh=0.01)
+        axis.set_xlabel(r"rewiring probability $\beta$")
+        axis.set_ylabel(ylabel)
+        axis.legend(frameon=False, fontsize=5.5)
+    axes[0].set_yscale("log")
+    axes[0].set_title("Hitting time versus rewiring")
+    axes[1].set_title("Quantum speedup versus rewiring")
+    figure.suptitle("E6: small-world graphs (median and range over 5 seeds)", fontsize=9)
+    save_figure(figure, path)
+    plt.close(figure)

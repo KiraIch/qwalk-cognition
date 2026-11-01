@@ -27,6 +27,8 @@ from .cognitive import (
 from .graphs import (
     adversarial_torus_marked,
     barbell_graph,
+    barabasi_albert,
+    connected_watts_strogatz,
     branched_decision_graph,
     complete_graph,
     cycle_graph,
@@ -59,6 +61,7 @@ from .plotting import (
     plot_e3_semantic,
     plot_e4_decision,
     plot_e4_robustness,
+    plot_e6_smallworld,
     plot_e5_decoherence,
     plot_e5_robustness,
 )
@@ -249,11 +252,17 @@ def run_e2(base_config: dict, experiment_config: dict) -> tuple[pd.DataFrame, pd
         blocks = walk_operator_blocks(P)
         for kind in ("single", "independent", "clustered"):
             kind_seeds = [0] if kind == "single" else seeds
+            seen_sets: set[tuple[int, ...]] = set()
             for seed in kind_seeds:
                 if kind == "single":
                     marked = list(case["single"])
                 else:
                     marked = marked_set(graph, kind, k=marked_size, seed=seed)
+                    # different seeds can give the same set; average over distinct sets only
+                    key = tuple(sorted(marked))
+                    if key in seen_sets:
+                        continue
+                    seen_sets.add(key)
                 ht = mean_hitting_time(P, marked)
                 ht_plus = ht_extended(P, marked, epsilon=epsilon)
                 max_steps = int(np.ceil(window * np.sqrt(ht))) + padding
@@ -307,6 +316,7 @@ def summarize_e2(frame: pd.DataFrame) -> dict:
             "N": int(n_vertices),
             "kind": kind,
             "seeds": group["seed"].astype(int).tolist(),
+            "n_distinct_sets": int(group["marked"].nunique()),
             "marked_sets": group["marked"].tolist(),
             "HT_mean": float(group["HT"].mean()),
             "HT_std": float(group["HT"].std(ddof=0)),
@@ -332,6 +342,7 @@ def run_e3(base_config: dict, experiment_config: dict):
     laplacian, degree, _ = normalized_laplacian(graph)
     gap = laplacian_spectral_gap(laplacian)
     max_time = float(config["time_window_relaxation"]) / gap
+    auc_tau = float(config["auc_window_relaxation"])
     times = np.linspace(0.0, max_time, int(config["n_time_points"]))
     initial_quantum = np.zeros(graph.number_of_nodes(), dtype=complex)
     initial_quantum[cue] = 1.0
@@ -349,7 +360,7 @@ def run_e3(base_config: dict, experiment_config: dict):
             ("quantum", quantum_probabilities),
             ("classical", classical_probabilities),
         ):
-            metrics = semantic_metrics(trajectory, times, target, graph, cue, gap)
+            metrics = semantic_metrics(trajectory, times, target, graph, cue, gap, auc_tau)
             metrics_records.append(
                 {
                     "cue": cue_name,
@@ -812,7 +823,7 @@ def _json_ready(value):
 def run(config_path: Path, experiment_path: Path, only: list[str] | None) -> None:
     base_config = load_yaml(config_path)
     experiment_config = load_yaml(experiment_path)
-    selected = set(only) if only else {"E1", "E2", "E3", "E4", "E5"}
+    selected = set(only) if only else {"E1", "E2", "E3", "E4", "E5", "E6"}
     root = Path(config_path).resolve().parent.parent
     raw_dir = root / base_config["paths"]["raw"]
     processed_dir = root / base_config["paths"]["processed"]
@@ -886,6 +897,18 @@ def run(config_path: Path, experiment_path: Path, only: list[str] | None) -> Non
         print(f"saved {curves_path}")
         print(f"saved {processed_path}")
         print(f"saved {figure_dir / 'E4_decision.pdf'}")
+    if "E6" in selected:
+        frame = run_e6(base_config, experiment_config)
+        raw_path = raw_dir / "E6_smallworld.csv"
+        frame.to_csv(raw_path, index=False, float_format="%.8g")
+        summary = summarize_e6(frame)
+        processed_path = processed_dir / "E6_smallworld.json"
+        with open(processed_path, "w", encoding="utf-8") as handle:
+            json.dump(_json_ready(summary), handle, indent=2)
+        plot_e6_smallworld(frame, figure_dir / "E6_smallworld.pdf")
+        print(f"saved {raw_path}")
+        print(f"saved {processed_path}")
+        print(f"saved {figure_dir / 'E6_smallworld.pdf'}")
     if "E5" in selected:
         frame, curves, deadline = run_e5(base_config, experiment_config)
         metrics_path = raw_dir / "E5_sweep.csv"
@@ -944,6 +967,111 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     run(args.config, args.experiments, args.only)
+
+
+def e6_cases(experiment_config: dict) -> list[dict]:
+    config = experiment_config["experiments"]["E6"]
+    seeds = [int(seed) for seed in config["seeds"]]
+    cases: list[dict] = []
+    ws = config["watts_strogatz"]
+    for n in ws["n"]:
+        for beta in ws["beta"]:
+            for seed in seeds:
+                cases.append(
+                    {
+                        "family": "watts_strogatz",
+                        "n": int(n),
+                        "parameter": float(beta),
+                        "seed": seed,
+                        "graph": connected_watts_strogatz(int(n), int(ws["k"]), float(beta), seed=seed),
+                    }
+                )
+    ba = config["barabasi_albert"]
+    for n in ba["n"]:
+        for seed in seeds:
+            cases.append(
+                {
+                    "family": "barabasi_albert",
+                    "n": int(n),
+                    "parameter": float(ba["m"]),
+                    "seed": seed,
+                    "graph": barabasi_albert(int(n), int(ba["m"]), seed=seed),
+                }
+            )
+    return cases
+
+
+def run_e6(base_config: dict, experiment_config: dict) -> pd.DataFrame:
+    """Scaling of T_q versus HT on small-world and scale-free graphs.
+
+    For each graph the marked vertex is the highest-degree ("hub") or the
+    lowest-degree ("peripheral") vertex; the interpolation parameter is chosen
+    exactly as in E1, so the columns are directly comparable to E1.
+    """
+    config = experiment_config["experiments"]["E6"]
+    s_grid = np.asarray(base_config["agjk"]["interpolation_grid"], dtype=float)
+    window = float(base_config["agjk"]["time_window_sqrt_ht"])
+    padding = int(base_config["agjk"]["time_window_padding"])
+    records: list[dict] = []
+    for case in e6_cases(experiment_config):
+        graph = case["graph"]
+        degrees = dict(graph.degree())
+        nodes = sorted(graph.nodes())
+        P = walk_transition(graph, base_config)
+        blocks = walk_operator_blocks(P)
+        clustering = float(nx.average_clustering(graph))
+        path_length = float(nx.average_shortest_path_length(graph))
+        for target_type in config["targets"]:
+            if target_type == "hub":
+                node = max(nodes, key=lambda v: (degrees[v], -v))
+            else:
+                node = min(nodes, key=lambda v: (degrees[v], v))
+            marked = [node]
+            ht = mean_hitting_time(P, marked)
+            max_steps = int(np.ceil(window * np.sqrt(ht))) + padding
+            best_s, best_q = _select_interpolation(P, marked, s_grid, max_steps)
+            curve = interpolated_success_curve(P, marked, best_s, max_steps, blocks=blocks)
+            t_q = int(np.argmax(curve[1:]) + 1)
+            records.append(
+                {
+                    "family": case["family"],
+                    "n": case["n"],
+                    "parameter": case["parameter"],
+                    "seed": case["seed"],
+                    "target": target_type,
+                    "target_degree": degrees[node],
+                    "clustering": clustering,
+                    "avg_path_length": path_length,
+                    "HT": ht,
+                    "s": best_s,
+                    "q_max": best_q,
+                    "t_q": t_q,
+                    "p_max": float(curve[t_q]),
+                    "speedup": ht / t_q,
+                }
+            )
+    return pd.DataFrame.from_records(records)
+
+
+def summarize_e6(frame: pd.DataFrame) -> dict:
+    summary: dict[str, dict] = {}
+    for key, group in frame.groupby(["family", "n", "parameter", "target"]):
+        family, n_vertices, parameter, target = key
+        summary[f"{family}_{n_vertices}_{parameter:g}_{target}"] = {
+            "family": family,
+            "N": int(n_vertices),
+            "parameter": float(parameter),
+            "target": target,
+            "clustering": float(group["clustering"].mean()),
+            "avg_path_length": float(group["avg_path_length"].mean()),
+            "HT_median": float(group["HT"].median()),
+            "t_q_median": float(group["t_q"].median()),
+            "speedup_median": float(group["speedup"].median()),
+            "speedup_min": float(group["speedup"].min()),
+            "speedup_max": float(group["speedup"].max()),
+            "p_max_min": float(group["p_max"].min()),
+        }
+    return summary
 
 
 if __name__ == "__main__":

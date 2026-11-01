@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 import numpy as np
+from scipy import stats as scipy_stats
 
 
 def success_metrics(probabilities: Sequence[float], threshold: float = 0.5) -> dict[str, float]:
@@ -34,11 +35,24 @@ def power_law_fit(x: Sequence[float], y: Sequence[float]) -> dict[str, float]:
     residual = np.log(y) - predicted
     total = np.log(y) - np.log(y).mean()
     r_squared = 1.0 - float(np.dot(residual, residual) / np.dot(total, total))
-    return {
+    result = {
         "exponent": float(slope),
         "prefactor": float(np.exp(intercept)),
         "r_squared": r_squared,
     }
+    dof = x.size - 2
+    if dof >= 1:
+        lx = np.log(x)
+        sxx = float(np.sum((lx - lx.mean()) ** 2))
+        se = float(np.sqrt(np.dot(residual, residual) / dof / sxx))
+        half = float(scipy_stats.t.ppf(0.975, dof)) * se
+        result.update(
+            {
+                "exponent_se": se,
+                "exponent_ci95": [float(slope) - half, float(slope) + half],
+            }
+        )
+    return result
 
 
 def entropy(distribution: Sequence[float], base: float = 2.0) -> float:

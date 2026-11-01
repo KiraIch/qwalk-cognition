@@ -13,15 +13,17 @@ graph and hypercube have smaller finite-size speedups because their classical
 hitting times grow almost linearly over the simulated range.
 
 The multiple-target experiments refine the picture. Independent targets are
-easier: spreading targets across the graph lowers both the classical hitting
-time and the quantum search time. Clustered targets behave like a single
-target, because reaching the cluster does not mean finding a particular vertex.
-The extended hitting time is close to the classical hitting time for these
-configurations. The dramatic $\HT^+\gg\HT$ gap appears only in the periodic
-adversarial construction of AGJK. This is an important negative result for a
-naive reading of $\HT^+$: multiple targets alone do not create the penalty.
-The penalty is a property of the arrangement and of the resulting spectral
-structure.
+easier: every independent set we tried was easier than every clustered set, and
+spreading targets across the graph lowers both the classical hitting time and
+the quantum search time. Clustered targets are not uniformly easier or harder
+than a single target. Their hitting time depends on whether the cluster sits
+near the graph's bottleneck, because reaching the cluster does not mean finding
+a particular vertex. The large $\HT^+\gg\HT$ gap appears in the periodic
+adversarial construction of AGJK, where it grows with size. A moderate gap of
+$2.9$ also appears for one specific independent set on a barbell graph, so
+multiple targets alone do not create a large penalty, but a specific
+arrangement can produce a moderate one. The penalty is a property of the
+arrangement and of the resulting spectral structure.
 
 The semantic experiment shows a distance-dependent difference between CTQW and
 CRW. For a near target the classical walk activates the neighbor immediately
