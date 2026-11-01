@@ -7,7 +7,8 @@
 > 2. E5 改為「讀出模型」與「偵測模型」兩種定義；`max_steps` 由 60 改為 120。
 > 3. E5 的 12× 結論撤回（振盪相位假象；lazy 後僅約 1.6×，平均掉 deadline 後消失）。短 deadline 下純量子最好；群聚目標在 $T\gtrsim20$ 時 $p\approx0.2$–$0.3$ 同時勝過純量子與古典。
 > 4. E4 改為隨機停止、偵測（$p=0.2$）、古典吸收三種讀出；非單調結論撤回，偵測讀出下耦合單調偏向未耦合選項。
-> 5. 測試由 47 增為 61，全部通過。
+> 5. 測試由 47 增為 61，再增為 71（目前數量）。
+> 6. **2026-11 更新**：E2 改用 seeds 0–19 並去除重複集合（distinct sets），E3 改用窗口 $\tau\le50$ 的全域峰值（AUC 取 $\tau\le8$），新增 E6（small-world／scale-free），E1 附 95% CI。§10.2、§10.3 已依 `E2_marked.csv`、`E3_semantic_metrics.csv` 更新；舊的 34.7／79.5、CTQW 0.237／0.247、CRW 0.046 等數字已作廢。
 
 > 這份文件是寫給「覺得自己很笨、但願意慢慢讀」的人。
 > 你不需要先學過量子力學、不需要先會 LaTeX、也不需要先會 Python 的高階技巧。
@@ -37,7 +38,7 @@
 - [7. 多選項決策：decision graph 與 choice probability](#7-多選項決策decision-graph-與-choice-probability)
 - [8. Partial measurement：退相干與「內省」](#8-partial-measurement退相干與內省)
 - [9. Metrics：所有數字的意思](#9-metrics所有數字的意思)
-- [10. 五個實驗 E1–E5 逐一拆解](#10-五個實驗-e1e5-逐一拆解)
+- [10. 實驗 E1–E5（及補充 E6）逐一拆解](#10-實驗-e1e5及補充-e6逐一拆解)
 - [11. 程式碼導覽：每個檔案在做什麼](#11-程式碼導覽每個檔案在做什麼)
 - [12. 報告導覽：每一節、每一張圖表](#12-報告導覽每一節每一張圖表)
 - [13. 常見誤解與 FAQ](#13-常見誤解與-faq)
@@ -1534,7 +1535,7 @@ Metrics 的目的不是「讓報告看起來很專業」，而是把「搜尋快
 - entropy：選擇有多集中？
 - AUC：整體活化量有多大？
 
-## 10. 五個實驗 E1–E5 逐一拆解
+## 10. 實驗 E1–E5（及補充 E6）逐一拆解
 
 這一節把每個實驗當成一個「問題 → 設定 → 程式 → 結果 → 解讀」的故事來講。
 
@@ -1587,12 +1588,12 @@ Metrics 的目的不是「讓報告看起來很專業」，而是把「搜尋快
 
 #### 結果
 
-| Family | $\mathrm{HT}$ exponent | $T_q$ exponent | $T_q\sim\mathrm{HT}^\gamma$ | max speedup |
+| Family | $\mathrm{HT}$ exponent | $T_q$ exponent | $T_q\sim\mathrm{HT}^\gamma$ [95% CI] | max speedup |
 |---|---:|---:|---:|---:|
-| Complete $K_N$ | 1.06 | 0.53 | 0.50 | 4.7 |
-| Cycle $C_N$ | 1.95 | 1.02 | 0.52 | 11.7 |
-| 2D grid | 1.26 | 0.61 | 0.48 | 7.9 |
-| Hypercube | 1.07 | 0.47 | 0.44 | 5.4 |
+| Complete $K_N$ | 1.06 | 0.53 | 0.50 [0.41, 0.59] | 4.7 |
+| Cycle $C_N$ | 1.95 | 1.02 | 0.52 [0.51, 0.54] | 11.7 |
+| 2D grid | 1.26 | 0.61 | 0.48 [0.39, 0.57] | 7.9 |
+| Hypercube | 1.07 | 0.47 | 0.44 [0.32, 0.55] | 5.4 |
 
 $p_{\max}$ 在 0.84–1.00 之間，所以 $T_q$ 不是「低機率下的假象」。
 
@@ -1626,7 +1627,7 @@ $p_{\max}$ 在 0.84–1.00 之間，所以 $T_q$ 不是「低機率下的假象�
   - `single`：1 個目標。
   - `independent`：4 個目標，用 farthest-point sampling 分散在圖上。
   - `clustered`：4 個目標，用 BFS 從一個隨機中心長出一個連通塊。
-- Seeds：independent/clustered 用 `[0,1,2]` 三個 seeds，取 mean 和 min–max band。
+- Seeds：`0–19`；重複的 marked set 已去除，每個設定使用互不相同的 sets（single 只有一組）；報告 distinct sets 的中位數與範圍。
 - 量子 walk：interpolated $W(s)$，$s$ 掃描。
 - $\mathrm{HT}^+$：用 `ht_extended`，$\epsilon=10^{-6}$。
 
@@ -1669,23 +1670,25 @@ Barbell graph 是「兩個 clique 用一條 path 連起來」，長得像啞鈴�
 
 #### 結果
 
-Selected rows：
+Selected rows（distinct sets 的中位數與範圍）：
 
-| Graph | Marked set | mean HT | mean HT⁺ | HT⁺/HT | mean Tq |
-|---|---|---:|---:|---:|---:|
-| Grid 8×8 | single | 95.5 | 95.5 | 1.00 | 17.0 |
-| Grid 8×8 | independent | 34.7 | 35.3 | 1.02 | 10.7 |
-| Grid 8×8 | clustered | 79.5 | 85.3 | 1.07 | 20.3 |
-| Barbell n=16 | single | 2558.0 | 2557.9 | 1.00 | 134.0 |
-| Barbell n=16 | independent | 16.8 | 25.4 | 1.52 | 7.0 |
-| Barbell n=16 | clustered | 2478.6 | 2507.4 | 1.01 | 115.3 |
+| Graph | Marked set | # sets | median HT [min, max] | median HT⁺/HT (max) | median Tq |
+|---|---|---:|---|---|---:|
+| Grid 8×8 | single | 1 | 95.5 | 1.00 | 17 |
+| Grid 8×8 | independent | 18 | 34.8 [26.9, 39.7] | 1.02 (1.05) | 10 |
+| Grid 8×8 | clustered | 18 | 85.0 [41.5, 131.1] | 1.06 (1.09) | 20 |
+| Barbell n=16 | single | 1 | 2558.0 | 1.00 | 134 |
+| Barbell n=16 | independent | 18 | 16.8 [16.4, 415.1] | 1.53 (2.94) | 7 |
+| Barbell n=16 | clustered | 16 | 2768.0 [1893.1, 2781.3] | 1.00 (1.04) | 133 |
+
+其他：Grid 6×6 independent 14 組、中位數 15.7、clustered 17 組、中位數 40.1（single 46.1）；Barbell n=8 independent 11 組、中位數 7.6、clustered 9 組、中位數 425.3（single 373.6）。Barbell n=16 independent 的最大比值 2.94 來自單一集合 {0,21,25,29}（HT 415），其餘 17 組為 1.35–1.53。
 
 Adversarial torus：
 
 | L | N | m | HT | HT⁺ | HT⁺/HT |
 |---:|---:|---:|---:|---:|---:|
 | 18 | 324 | 76 | 10.3 | 57.1 | 5.5 |
-| 24 | 576 | 108 | 20.5 | 150.9 | 7.3 |
+| 24 | 576 | 108 | 20.5 | 150.9 | 7.35 |
 | 30 | 900 | 148 | 34.9 | 295.9 | 8.5 |
 | 36 | 1296 | 252 | 50.5 | 443.1 | 8.8 |
 
@@ -1693,16 +1696,16 @@ L=18 時，$W(s)$ 仍然在 $t=6$ 達到 $p_{\max}=0.978$。
 
 #### 怎麼解讀？
 
-1. **Independent targets 比較容易**：目標分散，walker 從任何方向都可能碰到其中一個，所以 $\mathrm{HT}$ 下降。
-2. **Clustered targets 像 single target**：walker 走到 cluster 附近，還要找到 cluster 裡的某一個點；而且 cluster 內的點彼此很近，並沒有讓「找到第一個」變得多容易。
-3. **$\mathrm{HT}^+$ 不一定會爆炸**：一般的 clustered set，$\mathrm{HT}^+/\mathrm{HT}$ 只有 1.0–1.5。真正的大 gap 需要 AGJK 的 periodic 排列。
+1. **Independent targets 比較容易**：目標分散，walker 從任何方向都可能碰到其中一個，所以 $\mathrm{HT}$ 下降。四張圖上，每一組 independent 都比每一組 clustered 容易。
+2. **Clustered targets 相對 single 可易可難**：barbell n=16 的 clustered HT 為 single 的 0.74–1.09 倍；grid 8×8 為 0.43–1.37 倍（中位數 0.89 倍）。
+3. **$\mathrm{HT}^+$ 不一定會爆炸**：clustered set 的 $\mathrm{HT}^+/\mathrm{HT}$ 中位數 1.00–1.09（最大 1.10）；barbell independent 較大（1.38／1.53，單一集合達 2.94）。真正的大 gap 需要 AGJK 的 periodic 排列。
 4. **Adversarial torus**：`dense` 小方格 + `sparse` 週期格點，會讓 $D(s)$ 出現非常接近 1 的特徵值，所以 $\mathrm{HT}^+$ 很大。
 5. **但 Conjecture 3 仍然有效**：L=18 時，$W(s)$ 還是很快找到目標。這說明 $\mathrm{HT}^+$ 大不代表「所有 quantum walk 都慢」；它是 KMOR 那類演算法的 penalty，不是我們數值 protocol 的 penalty。
 
 #### 常見誤解
 
 - **「多個目標一定比較難」**：不一定。Independent targets 反而容易。
-- **「Clustered 一定會有很大的 HT⁺」**：不一定。我們的一般 clustered set 只有 1.07–1.09。大 gap 是 arrangement 的性質。
+- **「Clustered 一定會有很大的 HT⁺」**：不一定。我們的 clustered set 中位數只有 1.00–1.09。大 gap 是 arrangement 的性質。
 - **「$\mathrm{HT}^+$ 是量子演算法的實際執行時間」**：不是。$\mathrm{HT}^+$ 是 spectral quantity；我們的 actual $T_q$ 是從 $W(s)$ 的 success curve 量出來的。
 
 ### 10.3 E3：Toy semantic graph 的 target activation
@@ -1720,9 +1723,9 @@ L=18 時，$W(s)$ 仍然在 $t=6$ 達到 $p_{\max}=0.978$。
   - `violin`（distance 4，跨社群）。
 - CTQW：$e^{-iL_{\mathrm{sym}}t}$。
 - CRW：$e^{-L_{\mathrm{rw}}t}$。
-- 時間：$\tau=\lambda_1t$，$\lambda_1=0.03335$，$T_{\max}=8/\lambda_1$。
-- 取樣 1200 個時間點。
-- Metrics：$p_{\text{peak}}$、$\tau_{\text{peak}}$、AUC、entropy、coverage、expected radius。
+- 時間：$\tau=\lambda_1t$，$\lambda_1=0.03335$；窗口 $\tau\le50$，峰值取窗內全域最大值，AUC 取 $\tau\le8$。
+- Metrics：$p_{\text{peak}}$、$\tau_{\text{peak}}$、AUC（expected radius 不再回報）。
+- CTQW 曲線震盪強烈，峰值依窗口而變；AUC 是較穩定的比較量。
 
 #### 程式流程
 
@@ -1744,32 +1747,30 @@ L=18 時，$W(s)$ 仍然在 $t=6$ 達到 $p_{\max}=0.978$。
 
 #### 結果
 
-| Cue → target | Model | p_peak | τ_peak | AUC | Entropy | Radius |
-|---|---|---:|---:|---:|---:|---:|
-| animal → dog (d=1) | CTQW | 0.237 | 4.75 | 0.481 | 3.41 | 1.80 |
-| animal → dog (d=1) | CRW | 0.158 | 0.13 | 0.580 | 3.24 | 0.97 |
-| animal → violin (d=4) | CTQW | 0.247 | 6.86 | 0.360 | 3.28 | 2.99 |
-| animal → violin (d=4) | CRW | 0.046 | 8.00 | 0.324 | 4.18 | 2.36 |
+| Cue → target | Model | p_peak | τ_peak | AUC (τ≤8) |
+|---|---|---:|---:|---:|
+| animal → dog (d=1) | CTQW | 0.337 | 47.5 | 0.481 |
+| animal → dog (d=1) | CRW | 0.158 | 0.125 | 0.579 |
+| animal → violin (d=4) | CTQW | 0.268 | 19.3 | 0.360 |
+| animal → violin (d=4) | CRW | 無內部峰值（單調上升至 stationary π=0.0455） | — | 0.323 |
 
 #### 怎麼解讀？
 
 - **Near target（dog）**：
-  - CRW 立刻在 neighbor 上活化，$\tau_{\text{peak}}=0.13$，AUC 較高。
-  - CTQW 的峰值較高（0.237 vs 0.158），但出現得較晚（τ=4.75）。
-  - 所以「近距離」時，古典的早期反應比較好；量子則是「晚但高」。
+  - CRW 立刻在 neighbor 上活化（峰值 0.158，τ=0.125），之後衰減到 stationary 值 0.061；AUC 較高（0.579 vs 0.481）。
+  - CTQW 的窗內最大值 0.337 出現在 τ=47.5，是單次 recurrence 尖峰，不是穩定的「晚但高」。
 - **Far target（violin）**：
-  - CRW 幾乎均勻擴散，峰值只有 0.046（接近 stationary）。
-  - CTQW 峰值 0.247，是 CRW 的 5 倍多，出現在 τ=6.86。
-  - CTQW 的 expected radius 2.99，比 CRW 的 2.36 大，代表量子活化跑得比較遠、比較分散。
+  - CRW 沒有內部峰值，單調上升到 stationary 0.0455；AUC 0.323。
+  - CTQW 峰值 0.268（τ=19.3），AUC 0.360，高於 CRW。
 - **語意距離效應**：
-  - 近目標：古典勝在「快」。
-  - 遠目標：量子勝在「峰值高」。
-  - 這是一個 model-level prediction：跨社群的語意搜尋，量子模型會預測較晚但較強的活化。
+  - 近目標：CRW 的 AUC 較高。
+  - 遠目標：CTQW 的 AUC 較高。
+  - CTQW 峰值依窗口，結論以 AUC 為準。這是 model-level observation，不是人類資料。
 
 #### 常見誤解
 
-- **「CTQW 一定比 CRW 好」**：不一定。Near target 的 AUC 是 CRW 比較高。
-- **「AUC 高就是比較好」**：取決於你的問題。如果你在意「早期反應」，AUC 或 early activation 重要；如果你在意「峰值」，$p_{\text{peak}}$ 重要。
+- **「CTQW 一定比 CRW 好」**：不一定。Near target 的 AUC 是 CRW 比較高（0.579 vs 0.481）。
+- **「CTQW 的峰值就是它的表現」**：不是。CTQW 曲線震盪強，峰值取決於窗口；AUC 較穩定。
 - **「CTQW 和 Szegedy 是同一種 walk」**：不是。CTQW 是 continuous-time，Szegedy 是 discrete-time。我們在報告裡明確分開。
 
 ### 10.4 E4：Multi-alternative decision under coupling（已更新）
@@ -1829,6 +1830,12 @@ L=18 時，$W(s)$ 仍然在 $t=6$ 達到 $p_{\max}=0.978$。
 
 - 代表：在統一 lazy walk 與偵測讀出下，選項耦合的單調偏向可以重現。
 - 不代表：非單調選擇機率已被證實；不代表與 attraction effect 等同。
+
+### 10.4b E6：Small-world 與 scale-free 圖（補充實驗）
+
+- 設定：Watts–Strogatz（β∈{0, 0.05, 0.2, 1}，N∈{32, 64}，k=4）與 Barabási–Albert（m=2，N∈{32, 64}），5 seeds，target 分 hub 與 peripheral。
+- 結果：pooled $T_q\sim\mathrm{HT}^{0.52}$（95% CI 0.49–0.54，$R^2=0.94$，100 個 instance）；WS 指數 0.54，BA 指數 0.45。Hub speedup 隨 rewiring 下降（N=64：8.0 → 4.0）；peripheral speedup 4–9。BA 的 hub speedup 1.8–2.4，peripheral 6.8–11.5。
+- 來源：`code/results/raw/E6_smallworld.csv`；圖 `code/figures/E6_smallworld.pdf`。
 
 ### 10.5 E5：Partial measurement / decoherence sweep（已更新）
 
@@ -1937,7 +1944,7 @@ Final/
       experiments.py          ← E1–E5 runner
       plotting.py             ← 所有圖
       schematics.py           ← architecture figure
-    tests/                    ← 61 個 pytest
+    tests/                    ← 71 個 pytest
     notebooks/                ← 4 個 Jupyter notebooks
     results/raw/              ← CSV
     results/processed/        ← JSON
@@ -2004,7 +2011,7 @@ python -m src.experiments --only E5
 - E4：decision cases、coupling grid、$s$、threshold、max steps。
 - E5：cases、$p$ grid、max steps（120）、horizons、legacy deadline、$s$；lazy 參數 $\eta$ 來自 `base.yaml` 的 `walk.laziness`（全域，非 E5 專用）。
 
-### 11.5 Tests：61 個測試在保護什麼？
+### 11.5 Tests：71 個測試在保護什麼？
 
 - `test_classical.py`：complete graph/cycle 的 hitting time、stationary、diffusion、Monte Carlo。
 - `test_quantum.py`：unitarity、$D$ block、$W$ 與 dense matrix 一致、norm、Chebyshev bound、interpolated walk、$\mathrm{HT}^+$。
@@ -2363,7 +2370,7 @@ dependencies:
 python -m pytest -q
 ```
 
-你應該看到 `61 passed`。
+你應該看到 `71 passed`（待確認：本次文件更新未重跑 pytest）。
 
 #### 跑實驗
 
@@ -2731,11 +2738,11 @@ $$
 
 ### Q10：為什麼 E3 的 near target，古典 AUC 比較高？
 
-因為古典漫步一走到 neighbor 就立刻活化，然後慢慢衰減；量子漫步的峰值較高，但出現得較晚。AUC 是「整體活化量」，古典的早期高峰讓 AUC 較大。
+因為古典漫步一走到 neighbor 就立刻活化，然後慢慢衰減；AUC（τ≤8）是「整體活化量」，古典的早期高峰讓 AUC 較大（0.579 vs 0.481）。CTQW 窗內最大值（0.337）是 τ=47.5 的 recurrence 尖峰。
 
 ### Q11：為什麼 independent targets 反而容易？
 
-因為目標分散，walker 從任何方向都可能碰到其中一個。Clustered targets 則要走到同一個小區域，還要找到其中一個點，所以沒有比較容易。
+因為目標分散，walker 從任何方向都可能碰到其中一個。Clustered targets 則要走到同一個小區域，還要找到其中一個點；四張圖上每一組 independent 都比每一組 clustered 容易，而 clustered 相對 single 可易可難。
 
 ### Q12：什麼是 marked set？
 
@@ -2804,7 +2811,7 @@ Apers–Sarlette 的技術：用 $O(\sqrt t)$ 次 quantum walk update，模擬 $
 
 ### Q25：為什麼 E2 有些 seeds 的 marked set 一樣？
 
-`_farthest_point_sample` 從隨機起點開始，但對某些圖和 $k$，不同起點可能產生同一組 farthest-point set。這不是 bug，是對稱性造成的。我們保留 seed，讓結果可重現。
+`_farthest_point_sample` 從隨機起點開始，但對某些圖和 $k$，不同起點可能產生同一組 farthest-point set。這不是 bug，是對稱性造成的。E2 現用 seeds 0–19 並去除重複集合，每個設定使用互不相同的 sets（distinct sets 數量見 §10.2 表）。
 
 ### Q26：為什麼 E1/E2 的 $p_M(0)$ 不是 0？
 
@@ -3062,7 +3069,7 @@ A：有，用於 code scaffolding、experiment automation、LaTeX drafting。所
 - [ ] 所有 figure 在文中都有 `\cref`。
 - [ ] 所有 citation 都在 `refs.bib`。
 - [ ] `report/figures/` 裡的 PDF 都是最新的。
-- [ ] `code/tests/` 61 個測試都通過。
+- [ ] `code/tests/` 71 個測試都通過。
 - [ ] `README.md` 的指令可以重現至少一張 main figure。
 - [ ] AI disclosure 有寫。
 - [ ] 沒有 TODO / placeholder（除了作者欄位）。

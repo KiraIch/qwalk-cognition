@@ -7,12 +7,13 @@
 > 標記約定：「（待確認）」表示本文無法由程式或結果檔直接驗證，或兩份來源互相矛盾；文末會彙整。
 
 > **主 session 核對結果（2026-10-31，覆蓋下文對應的「待確認」）**
-> - 測試：實際執行 `python -m pytest -q` → **61 passed**。附錄原寫的 47 已改為 61。
+> - 測試：目前測試數為 **71**（先前核對為 61，附錄原寫 47 皆已過時）。
+> - **2026-11 更新**：E2 改用 seeds 0–19 並去除重複集合（distinct sets），E3 改用窗口 $\tau\le50$ 的全域峰值，並新增 E6（small-world／scale-free）與 E1 的 95% CI；下文 E2（§5.2）、E3（§5.3）與附錄 A 的對應敘述已依 `E2_marked.csv`、`E3_semantic_metrics.csv`、`E2_adversarial_torus.csv` 更新，舊的「兩個不同集合」「79.5」「0.247／0.046」等說法皆已作廢。
 > - E4 穩健性 spread（偵測最大 0.045、古典最大 0.065、隨機停止中位數 0.08／最大 0.26、首次越過門檻中位數 0.44／最大 0.78）已由 code-reviewer 對照 `code/results/processed/E4_robustness.json` 核對無誤。
 > - E5 逐 $T$ 敘述（T≲15 純量子最佳、群聚目標 T≳20 中間 p 最佳且 T=35 短暫回到 p=0、grid 單一目標 T=34–36 回到 0 並在 T≥71 為 p=1、語意圖單一目標 13≤T≤85 古典最佳）已由 code-reviewer 以 `E5_curves.csv` 逐點核對，論文已依此改寫。
 > - 實測耗時：E5 約 33 秒；E4（含穩健性掃描）超過 10 分鐘（600 秒逾時仍未跑完）。
 > - `report/figures/` 的 E1、E2、E4、E5 圖是由 `code/figures/` 直接複製而來，兩邊內容相同。
-> - E3：violin 的平穩機率 $\pi=d/2|E|=0.04545$，古典 0.046 確實就是平穩值，論文說法成立；但它在時間窗末端仍在上升，所以不是真正的「峰值」。
+> - E3：violin 的平穩機率 $\pi=d/2|E|=0.0455$；CRW 對 violin 沒有內部峰值，單調上升至此平穩值（見 §5.3 更新）。
 > - `base.yaml` 中**只有** `paths.*`、`walk.laziness`、`agjk.*` 會被程式讀取；`seed`、`walk.initial`、`walk.max_steps`、`walk.success_threshold`、`classical.*`、`quantum.*`、`noise.*` 都沒有被讀取（以 grep 確認）。各實驗的 `max_steps`、`seeds`、`measurement_probabilities` 來自 `experiments.yaml`。
 > - 以下函式不被 `experiments.py`／`plotting.py` 呼叫，只用於測試或保留：`interpolated_stationary`、`random_regular_graph`、`line_decision_graph`、`multi_branch_decision_graph`、`activation_curve`、`response_time`、`success_probability_with_measurement`、`area_under_curve`、`normalized_entropy`、`success_metrics`、`first_passage_time`、`hit_probability_curve`。
 > - 論文第 6 節「complete graph and hypercube have Θ(N log N)-like」已改為「近線性（α≈1.06–1.07）」。
@@ -79,8 +80,8 @@
 | 實驗 | 一句話結論 | 主要數字（來源） |
 |---|---|---|
 | E1 古典 vs 量子縮放 | 量子搜尋時間 $T_q$ 大致隨 $\HT^{\gamma}$ 成長，$\gamma\approx0.44$–$0.52$。 | 指數表來自論文；單點數值見 `code/results/raw/E1_scaling.csv` |
-| E2 單一／獨立／群聚標記 | 獨立標記最容易；群聚標記行為接近單一目標；大的 $\HT^+/\HT$ 只出現在 AGJK 對抗式環面（adversarial torus）。 | 8×8 格點 $\HT$：單一 95.5、獨立 34.7、群聚 79.5（`E2_marked.csv` 平均） |
-| E3 語意活化 | 在玩具語意圖上，CTQW 對遠目標有較高且較晚的峰值；CRW 對近目標有較高的早期 AUC。 | `code/results/raw/E3_semantic_metrics.csv` |
+| E2 單一／獨立／群聚標記 | 每一組獨立標記都比每一組群聚標記容易；群聚標記相對單一目標可易可難；大的 $\HT^+/\HT$ 主要出現在 AGJK 對抗式環面（adversarial torus）（barbell $n=16$ 的單一獨立集合達 2.94）。 | 8×8 格點 $\HT$：單一 95.5、獨立中位數 34.8、群聚中位數 85.0（`E2_marked.csv`，distinct sets 的中位數） |
+| E3 語意活化 | 在玩具語意圖上，近目標 `dog` 的 AUC 是 CRW 較高（0.579 對 0.481）；遠目標 `violin` 的 AUC 是 CTQW 較高（0.360 對 0.323），且 CRW 沒有內部峰值。CTQW 峰值依窗口而變，以 AUC 比較較穩定。 | `code/results/raw/E3_semantic_metrics.csv` |
 | E4 多選項決策與耦合 | 耦合兩個選項，量子選擇機率會移向未耦合選項（對稱三選項從 $1/3$ 到約 $0.50$）；古典在對稱圖上保持均勻；但只有「無相位」讀出才成立。 | `code/results/raw/E4_robustness.csv` |
 | E5 部分量測退相干 | 純量子的定時峰值最高，但需要對準時機；在偵測模型中，中等量測率（$p\approx0.2$–$0.3$）對群聚目標在中等截止時間下優於純量子與古典。 | `code/results/raw/E5_sweep.csv` |
 
@@ -722,7 +723,7 @@ E3 的 cue 是 `animal`（0），target 是 `dog`（1，距離 1）與 `violin`�
 - `clustered_marked(graph, k, seed, center)`：從隨機中心做 BFS，取前 $k$ 個節點。這產生「群聚」（連通）的集合。
 - `marked_set(graph, kind, k, seed)`：分派。
 
-**已知問題（重要）**：`_farthest_point_sample` 的隨機起點由 `seed` 決定。在 E2 的 seeds 0、1、2 中，grid $6\times6$ 的 seed 0 與 seed 2 產生**完全相同**的集合（`E2_marked.csv`：兩者都是 `30 5 0 21`）。barbell $n=8$ 的 seed 0 與 seed 2 也相同。因此「三個隨機標記集合的平均」實際上只有兩個不同的集合。論文 `06_results.tex` 的表格說明「means are over three random marked sets」，這在統計上是誤導的（待確認：應改寫為「三個種子、兩個不同集合」，或增加種子）。
+**已知問題（已處理）**：`_farthest_point_sample` 的隨機起點由 `seed` 決定，在對稱圖上不同 seed 可能產生完全相同的集合（例如舊版 seeds 0、1、2 下 grid $6\times6$ 的 seed 0 與 2 皆為 `30 5 0 21`）。E2 現改用 seeds 0–19 並**去除重複集合**，每個設定使用互不相同的 sets，報告中位數與範圍（各設定的 distinct sets 數見 §5.2）。舊的「三個隨機標記集合」「兩個不同集合」說法已作廢。
 
 #### `option_sets(terminals, extra=None)`（第 303 行）
 
@@ -1082,7 +1083,7 @@ new_q[:, 1] += measurement_probability * q0 * pure_positions[step] # 從未量�
 
 **輸出格式**：CSV 用 `float_format="%.8g"`；JSON 用 `indent=2`。E4 主流程寫的是 `E4_metrics.csv`，穩健性寫的是 `E4_robustness.csv`；前者只含舊讀出與古典，後者含全部四種讀出（詳見第 5 章 E4）。
 
-## 第 5 章　五個實驗 E1–E5
+## 第 5 章　實驗 E1–E5（另有補充實驗 E6）
 
 每個實驗依序列出：動機 → 對應 RQ／假說 → 設定（來自 `experiments.yaml`）→ 程式路徑 → 輸出檔與欄位 → 結果數字 → 圖怎麼看 → 結論與限制 → 老師可能的追問。
 
@@ -1112,7 +1113,7 @@ new_q[:, 1] += measurement_probability * q0 * pure_positions[step] # 從未量�
 - [CSV] hypercube 的 $T_q\in\{6,8,11,16\}$，與論文一致。
 - [CSV] hypercube 的 `spectral_gap` 全為 0.2（$=2\eta$），`phase_gap` 為 0.6、0.45、0.36、0.30，等於 $1.8/d$。
 - [CSV] 最大 speedup：$K_N$ 4.67、cycle 11.67、grid 7.93、hypercube 5.35。論文表格 4.7、11.7、7.9、5.4，一致。
-- [論文] 指數表：$\HT\sim N^\alpha$ 的 $\alpha$ 為 1.06、1.95、1.26、1.07；$T_q\sim\HT^\gamma$ 的 $\gamma$ 為 0.50、0.52、0.48、0.44。本次沒有重新做 OLS 擬合（待確認：可由 `E1_scaling.json` 的 `fit_tq_vs_HT` 核對）。
+- [論文] 指數表：$\HT\sim N^\alpha$ 的 $\alpha$ 為 1.06、1.95、1.26、1.07；$T_q\sim\HT^\gamma$ 的 $\gamma$ 為 0.50、0.52、0.48、0.44。95% 信賴區間：complete 0.50 [0.41, 0.59]、cycle 0.52 [0.51, 0.54]、grid 0.48 [0.39, 0.57]、hypercube 0.44 [0.32, 0.55]。
 
 **圖怎麼看**（`plotting.plot_e1_scaling`，2×2）：四格分別是 complete、cycle、grid、hypercube。每格以雙對數座標畫兩條線：藍色圓點是古典 $\HT$（`classical HT`），橘色方點是量子 $T_q$（`quantum T_q`），並加上冪律擬合；縱軸單位是 steps。右上角或附註會顯示擬合的指數（待確認：未實際目視確認附註位置）。`plot_e1_speedup` 則是一張圖，縱軸 $\HT/T_q$，灰色虛線在 1。
 
@@ -1135,55 +1136,61 @@ new_q[:, 1] += measurement_probability * q0 * pure_positions[step] # 從未量�
 **設定**（`experiments.yaml` 的 E2）：
 
 - grid $L\in\{6,8\}$（單一標記在中心）；barbell $n_{\text{each}}\in\{8,16\}$（單一標記在節點 0）。
-- 標記型態 single、independent（最遠點取樣，$k=4$）、clustered（BFS，$k=4$），種子 $\{0,1,2\}$。
+- 標記型態 single、independent（最遠點取樣，$k=4$）、clustered（BFS，$k=4$），種子 $0$–$19$（重複的標記集合已去除，每個設定使用互不相同的 sets；single 只有一組）。
 - 對抗式環面：$L\in\{18,24,30,36\}$，$\eta=0.2$，只模擬 $L\le18$。
 
 **程式路徑**：`run_e2`（第 236 行）→ 每個 (graph, kind, seed) 計算 HT、$\HT^+$（`ht_extended`，$\varepsilon=10^{-6}$）、`_select_interpolation`、`interpolated_success_curve`、$T_q$、speedup。對抗式部分由 `run_e2_adversarial`（第 753 行）處理。
 
-**輸出**：`results/raw/E2_marked.csv`（28 列：四個 case，每個 case 為 single 1 列、independent 3 列、clustered 3 列）、`E2_curves.csv`（每條曲線每個 $t$ 一列）、`E2_adversarial_torus.csv`（4 列）；`processed/E2_marked.json`（依 `family_parameter_kind` 分組的平均）、`processed/E2_adversarial_torus.json`；`figures/E2_success.pdf`、`figures/E2_ht.pdf`。
+**輸出**：`results/raw/E2_marked.csv`（每個 case：single 1 列，independent／clustered 為 distinct sets 的列；數量見下表）、`E2_curves.csv`（每條曲線每個 $t$ 一列）、`E2_adversarial_torus.csv`（4 列）；`processed/E2_marked.json`（依 `family_parameter_kind` 分組的彙總）、`processed/E2_adversarial_torus.json`；`figures/E2_success.pdf`、`figures/E2_ht.pdf`。
 
 **結果（[CSV] 核對）**：
 
-| 圖 | 標記 | HT（平均） | $\HT^+$（平均） | 比值 | $T_q$（平均） |
-|---|---|---|---|---|---|
-| grid $8\times8$ | single | 95.5 | 95.5 | 1.00 | 17.0 |
-| grid $8\times8$ | independent | 34.7 | 35.3 | 1.02 | 10.7 |
-| grid $8\times8$ | clustered | 79.5 | 85.3 | 1.07 | 20.3 |
-| barbell $n=16$ | single | 2558.0 | 2557.9 | 1.00 | 134.0 |
-| barbell $n=16$ | independent | 16.8 | 25.4 | 1.52 | 7.0 |
-| barbell $n=16$ | clustered | 2478.6 | 2507.4 | 1.01 | 115.3 |
+| 圖 | 標記 | distinct sets | HT 中位數 [min, max] | 中位數 $\HT^+$/HT（max） | 中位數 $T_q$ |
+|---|---|---:|---|---|---:|
+| grid $6\times6$ | single | 1 | 46.1 | 1.00 | 12 |
+| grid $6\times6$ | independent | 14 | 15.7 [12.7, 17.4] | 1.01（1.02） | 7 |
+| grid $6\times6$ | clustered | 17 | 40.1 [17.6, 54.9] | 1.09（1.10） | 14 |
+| grid $8\times8$ | single | 1 | 95.5 | 1.00 | 17 |
+| grid $8\times8$ | independent | 18 | 34.8 [26.9, 39.7] | 1.02（1.05） | 10 |
+| grid $8\times8$ | clustered | 18 | 85.0 [41.5, 131.1] | 1.06（1.09） | 20 |
+| barbell $n=8$ | single | 1 | 373.6 | 1.00 | 51（舊值，未重算） |
+| barbell $n=8$ | independent | 11 | 7.6 [7.1, 7.6] | 1.38（1.38） | 5 |
+| barbell $n=8$ | clustered | 9 | 425.3 [196.6, 433.2] | 1.01（1.09） | 48 |
+| barbell $n=16$ | single | 1 | 2558.0 | 1.00 | 134（舊值，未重算） |
+| barbell $n=16$ | independent | 18 | 16.8 [16.4, 415.1] | 1.53（2.94） | 7 |
+| barbell $n=16$ | clustered | 16 | 2768.0 [1893.1, 2781.3] | 1.00（1.04） | 133 |
 
-以上都與論文表格一致（我把三個種子的平均重新算過）。
+barbell $n=16$ independent 的最大比值 2.94 來自單一集合 $\{0,21,25,29\}$（HT 415）；其餘 17 組為 1.35–1.53。single 的 $T_q$ 沿用先前單一種子的值（single 只有一組）。
 
 - [CSV] 對抗式環面：$L=18$ 的 HT $=10.33$、$\HT^+=57.13$、比值 5.53，$p_{\max}=0.978$ 於 $t_q=6$；$L=36$ 的比值 8.78。論文寫「5.5 到 8.8」，一致。
 - [CSV] 論文的 $N$ 是環面的邊長，程式中的 `length` 即為 $N$（頂點數為 $N^2$）。以邊長平方 $L^2$ 計算，$\HT^+/L^2$ 在 $L=18,24,30,36$ 分別為 0.18、0.26、0.33、0.34。論文 `03_theory.tex` 寫「$\HT^+=\Omega(N^2)$」是漸近陳述。這些數字與它相容，但**只有 $L\le36$ 的數據，無法驗證漸近性**（待確認）。
 
-**重要的實驗設計問題（必須在答辯時說明）**：
+**實驗設計說明**：
 
-1. 「三個隨機標記集合」其實只有兩個不同的集合。grid $6\times6$ 的 seed 0 與 seed 2 完全相同（`30 5 0 21`）；barbell $n=8$ 的 seed 0 與 seed 2 也相同（`20 0 11 14`）。這是 `_farthest_point_sample` 隨機起點的結果（第 4.3 節）。論文的 "mean over three random marked sets" 應改為更精確的描述，或增加種子（待確認：是否要修正論文）。
-2. 獨立集合的 HT 差異，部分來自對稱性：barbell $n=8$ 的 seed 0 與 seed 1 得到相同的 HT（7.5887），因為兩個集合在兩個團之間的結構等價。
+1. 先前版本只用 seeds 0–2，且 seed 0 與 seed 2 在對稱圖上產生相同集合，因此「三個集合」實為兩個。現已改用 seeds 0–19 並去除重複集合，每個設定使用互不相同的 sets（見上表 distinct sets 欄）。
+2. 對稱性仍會讓部分不同集合有相同的 HT（例如 barbell 的獨立集合 HT 集中在 7.1–7.6），這是結構等價，不是 bug。
 
 **圖怎麼看**：
 
-- `E2_success.pdf`（`plot_e2_success`，2×2）：四格是四個 case（grid 6、grid 8、barbell 8、barbell 16）。每格的橫軸是步數 $t$，縱軸是成功機率 $p_M(t)$；三種標記型態各一條線，陰影帶是三個種子的最小到最大範圍（論文 caption 如此描述；待確認陰影實作細節）。
+- `E2_success.pdf`（`plot_e2_success`，2×2）：四格是四個 case（grid 6、grid 8、barbell 8、barbell 16）。每格的橫軸是步數 $t$，縱軸是成功機率 $p_M(t)$；三種標記型態各一條線，陰影帶是 distinct sets 的最小到最大範圍（待確認：圖檔是否已用去重後的資料重繪）。
 - `E2_ht.pdf`（`plot_e2_ht`，1×2）：左圖是古典 HT（橫軸）對 $\HT^+$（縱軸）的散點，灰色虛線是 $\HT=\HT^+$；右圖是對抗式環面的 HT 與 $\HT^+$ 對 $N$ 的曲線，標籤是比值。
 
 **結論與限制**：
 
-- 獨立標記最容易（8×8 grid 上 HT 從 95.5 降到 34.7）。
-- 群聚標記的 HT 介於單一與獨立之間（8×8 grid 上 79.5），並非「與單一幾乎一樣」。論文說「群聚標記行為接近單一目標」，但在 8×8 grid 上 79.5 相對 95.5 差 17%；在 barbell 上則幾乎相同（2478.6 對 2558.0）。這應表述為「在 barbell 上接近；在 grid 上較接近但仍有差別」（待確認論文的措辭是否需要調整）。
-- 大的 $\HT^+/\HT$ 只出現在 barbell 獨立集合（1.52）與對抗式環面。論文的 "structural" 結論依賴於對抗式環面，而該環面只模擬到 $L=18$。
+- 四張圖上，每一組獨立標記都比每一組群聚標記容易（例如 8×8 grid：獨立中位數 34.8，群聚中位數 85.0，單一 95.5）。
+- 群聚標記相對單一目標可易可難：barbell $n=16$ 群聚為單一值的 0.74–1.09 倍；grid $8\times8$ 群聚為 0.43–1.37 倍（中位數 0.89 倍）。因此「群聚約等於單一、減少 3%／17%」的說法不成立。
+- $\HT^+/\HT$：barbell 獨立集合中位數 1.38（$n=8$）與 1.53（$n=16$），其中 $n=16$ 有一組達 2.94（其餘 17 組 1.35–1.53）；其他情況中位數 1.00–1.09（最大 1.10）。更大的比值出現在對抗式環面（5.53–8.78），該環面只對 $L=18$ 跑完整 $W(s)$。
 
 **老師可能的追問**：
 
-- 「為什麼 $\HT^+$ 在 barbell 獨立集合上是 1.52？」答：標記點分布在兩個團中，而 $\HT^+$ 考慮的是內插漫步的譜，兩個團之間的瓶頸使得 $\HT^+$ 比 HT 大。這是數值觀察，本文沒有給出解析解（待確認）。
+- 「為什麼 $\HT^+$ 在 barbell 獨立集合上中位數是 1.53（最大 2.94）？」答：標記點分布在兩個團中，而 $\HT^+$ 考慮的是內插漫步的譜，兩個團之間的瓶頸使得 $\HT^+$ 比 HT 大。這是數值觀察，本文沒有給出解析解（待確認）。
 - 「為什麼對抗式環面只模擬 $L=18$？」答：$W(s)$ 是稠密矩陣，$n=324$ 時狀態為 $2n^2\approx2\times10^5$ 維的運算仍可做，但 $L=24$ 以上的 $N$ 在本專題的稠密實作中成本較高（待確認：未量測實際時間）。
 
 ### 5.3 E3：語意活化（玩具語意圖）
 
-**動機與假說**：RQ1 與預測 3。語意距離改變活化時序：CTQW 對遠目標有較高峰值，CRW 對近目標有較高早期 AUC。
+**動機與假說**：RQ1 與預測 3。語意距離改變活化時序：CTQW 對遠目標有較高活化，CRW 對近目標有較高早期 AUC。
 
-**設定**：`toy_semantic` 圖（19 頂點，33 邊）；cue `animal`；目標 `dog`（距離 1）與 `violin`（距離 4）；時間窗 $\tau\in[0,8]$（即 $t\in[0,8/\lambda_1]$），1200 個點。
+**設定**：`toy_semantic` 圖（19 頂點，33 邊）；cue `animal`；目標 `dog`（距離 1）與 `violin`（距離 4）；時間窗 $\tau\le50$，峰值取窗內全域最大值，AUC 只積分 $\tau\le8$。
 
 **程式路徑**：`experiments.run_e3`（第 325 行）：
 
@@ -1197,27 +1204,32 @@ new_q[:, 1] += measurement_probability * q0 * pure_positions[step] # 從未量�
 **結果（[CSV] 核對）**：
 
 - 譜隙 $\lambda_1=1/29.9879\approx0.03335$，四捨五入為 0.0333，與論文一致。（`relaxation_time` 欄位即 $1/\lambda_1$。）弛緩時間 $1/\lambda_1=29.99\approx30.0$。
-- 近目標 `dog`：量子 $p_{\text{peak}}=0.2367$（$\tau=4.75$）；古典 $p_{\text{peak}}=0.1581$（$\tau=0.127$）。論文 0.237、4.75、0.158、0.13，一致。
-- 近目標 AUC：古典 0.5796、量子 0.4807。論文 0.580 與 0.481，一致。
-- 遠目標 `violin`：量子 $p_{\text{peak}}=0.2470$（$\tau=6.86$），AUC 0.3604，峰值處的期望半徑 2.99；古典 $p_{\text{peak}}=0.0455$，AUC 0.3235，半徑 2.36。論文數字一致。
+- 近目標 `dog`：CTQW 窗內峰值 $0.337$（$\tau=47.5$），這是單次 recurrence 尖峰（舊值 0.237 於 $\tau=4.75$ 不是窗內峰值，已作廢）；CRW 峰值 $0.158$（$\tau=0.125$），之後衰減到平穩值 $0.061$。AUC（$\tau\le8$）：CRW 0.579、CTQW 0.481。
+- 遠目標 `violin`：CTQW 峰值 $0.268$（$\tau=19.3$），AUC 0.360；CRW **沒有內部峰值**，單調上升至平穩值 $\pi=0.0455$，AUC 0.323。（舊文「CRW 只到 0.046」「CTQW 0.247 於 $\tau=6.86$」皆已作廢；峰值處期望半徑 2.99／2.36 不再回報。）
 
 **需要注意的兩件事**：
 
-1. **古典遠目標的「峰值」位於時間窗的右端點**。[CSV] 古典 `violin` 的 `tau_peak = 8.0`，正好是 $\tau_{\max}$。這表示 CRW 在窗內仍單調上升，所謂「峰值 0.046」只是窗內最大值，不是真正的峰。論文說「CRW 只到 0.046，基本上是其平穩值」，平穩值為 $\pi_{\text{violin}}=d_{\text{violin}}/\sum d$（violin 的度數與總度數需由 JSON 或程式核對，待確認），因此「基本上是平穩值」的說法需要以此檢查。
-2. **AUC 與半徑依賴時間窗**。AUC 只積分到 $\tau=8$；若改用更長窗，數字會變。論文沒有說明時間窗對 AUC 的敏感度（待確認）。
+1. **CTQW 曲線震盪強烈，峰值依賴窗口**。換一個窗口長度，CTQW 的峰值高度與位置都可能改變（例如 `dog` 的 0.337 只是一次 recurrence 尖峰）。AUC 是較穩定的比較量。
+2. **AUC 只積分到 $\tau=8$**；若改用更長窗，AUC 會變。論文是否說明此敏感度：待確認。
 
 **圖怎麼看**（`plot_e3_semantic`，2×2 加一張圖）：左上是玩具語意圖（節點依群組上色，`_semantic_group`），其餘格是兩個目標的活化曲線（橫軸 $\tau=\lambda_1 t$，縱軸 $p_T$），藍線與橘線分別是 CRW 與 CTQW（依程式中的 `label` 與顏色）；最後一格（metric 軸）是各模型的峰值活化長條圖。（待確認：未目視確認面板的確切排列。）
 
 **結論與限制**：
 
-- 語意距離效應在本玩具圖上存在，方向與預測 3 一致。
-- 遠目標的量子優勢在 $p_{\text{peak}}$ 上（0.247 對 0.046），但古典的「峰」在窗外或窗邊，比較不乾淨。
+- 語意距離效應在本玩具圖上存在：近目標 CRW 的 AUC 較高，遠目標 CTQW 的 AUC 較高；方向大致與預測 3 一致，但因 CTQW 震盪，結論限於 AUC。
+- 遠目標上 CTQW 的 AUC 較高（0.360 對 0.323），且 CRW 無內部峰值；但 CTQW 峰值依窗口，單以峰值比較不穩定。近目標則是 CRW 的 AUC 較高。
 - 19 個頂點、手工建立的圖；沒有真實語意網路資料（見第 9 章）。
 
 **老師可能的追問**：
 
 - 「為什麼 $\tau$ 要除以 $\lambda_1$？」答：CTQW 與 CRW 的特徵值相同，但時間尺度仍需要對齊。以 $\lambda_1$ 為單位，兩者在同一個弛緩尺度上比較。這是一個規範化選擇，不是唯一選擇。
-- 「為什麼用 $1200$ 個時間點？」答：是 `experiments.yaml` 的設定。它決定峰值位置的解析度，約為 $8/(1200\lambda_1)$ 的時間步長（待確認：未測試對解析度的敏感度）。
+- 「為什麼 CTQW 峰值不穩定？」答：CTQW 為酉演化，曲線近週期震盪，窗內全域最大值取決於窗口長度；所以用 AUC（$\tau\le8$）作主要比較。
+
+### 5.3b E6：Small-world 與 scale-free 圖（補充實驗）
+
+- 設定：Watts–Strogatz（$\beta\in\{0,0.05,0.2,1\}$，$N\in\{32,64\}$，$k=4$）與 Barabási–Albert（$m=2$，$N\in\{32,64\}$）；5 個種子；目標分 hub 與 peripheral。
+- 結果：pooled $T_q\sim\HT^{0.52}$（95% CI 0.49–0.54，$R^2=0.94$，100 個 instance）；WS 指數 0.54，BA 指數 0.45。Hub speedup 隨 rewiring 下降（$N=64$：8.0 → 4.0）；peripheral speedup 4–9。BA 的 hub speedup 1.8–2.4，peripheral 6.8–11.5。
+- 來源：`code/results/raw/E6_smallworld.csv`；圖 `code/figures/E6_smallworld.pdf`。
 
 ### 5.4 E4：多選項決策與選項耦合
 
@@ -1350,7 +1362,7 @@ new_q[:, 1] += measurement_probability * q0 * pure_positions[step] # 從未量�
 | `test_noise.py` | 7 | 基底系綜是機率分布、$p=1$ 讀出等於古典、$p=0$ 讀出等於純量子、有界、偵測 $p=0$ 等於純量子讀出、$p=1$ 偵測等於古典 first passage、偵測 $\ge$ 讀出 | E5 的遞迴正確性（最重要的測試之一） |
 | `test_experiments.py` | 1 | `walk_transition` 使用設定的 $\eta$ 且對角為 $\eta$ | 確保 lazy 入口正確 |
 
-合計 61 個測試（依原始碼計數）。**論文 `05_methods.tex` 的 61 與此相符；附錄 `appendix.tex` 寫的 47 與原始碼不符**（見附錄 A）。以 `python -m pytest --collect-only -q` 確認（待確認：本次沒有執行測試）。
+目前合計 71 個測試（先前版本為 61，更舊的附錄寫 47，皆已過時）。以 `python -m pytest --collect-only -q` 確認（待確認：本次文件更新沒有重跑測試）。上方逐檔數量為舊版統計，未逐檔重算。
 
 ### 6.2 三個最關鍵的「交叉驗證」測試
 
@@ -1387,7 +1399,7 @@ cd Final/code
 python -m pytest -q
 ```
 
-預期：61 個測試（依原始碼計數，待確認）。本次撰寫時未執行，故未驗證通過與否。
+預期：71 個測試（本次文件更新未重跑 pytest）。
 
 ### 7.3 實驗（必須在 `code/` 下執行）
 
@@ -1431,11 +1443,11 @@ python -m src.experiments --only E1 E3   # 多個實驗可以同時列出
 | 節 | 檔案 | 主要主張 | 依據 | 措辭注意 |
 |---|---|---|---|---|
 | 摘要 | `main.tex` 第 46–68 行 | $T_q\sim\HT^{0.44\text{–}0.52}$；獨立目標較易；大的 $\HT^+$ 只在對抗式環面；E3、E4、E5 三項結論 | 第 5 章各實驗 | 「process-level」與「不主張生物量子優勢」的限定有明確寫出，這是正確的 |
-| 1 Introduction | `01_introduction.tex` | 三個 RQ、四項貢獻、論文結構 | 無 | 貢獻 2 寫「clustered targets behave like a single target」，與 E2 數字（8×8 grid 79.5 vs 95.5）有差距，建議改寫（見第 5.2 節） |
+| 1 Introduction | `01_introduction.tex` | 三個 RQ、四項貢獻、論文結構 | 無 | 貢獻 2 寫「clustered targets behave like a single target」，與新的 E2 數字不符（群聚相對單一可易可難，8×8 grid 0.43–1.37 倍），建議改寫（見第 5.2 節） |
 | 2 Background | `02_background.tex` | 古典擊中時間、Szegedy、AGJK、量子認知文獻表（表 `tab:literature`） | 文獻 | 「hypercube behaves like $N\log N$」與 E1 數據（近線性）不完全一致（待確認） |
 | 3 Theory | `03_theory.tex` | 判別矩陣的譜、HT 與 $\HT^+$ 的定義、對抗式環面、內插漫步、部分量測通道、CTQW/CRW | 數學推導與 AGJK | 「$\HT=\widetilde O(d^2)$，$\HT^+=\Omega(N^2)$」是漸近陳述，數值只到 $L=36$（見第 5.2 節） |
 | 4 Cognitive model | `04_cognitive_model.tex` | 對應表、五條假設、反應時間與選擇機率定義、相似性與語意距離、四個可測試預測 | 定義 | 預測 3 寫「古典有較高的早期 AUC」，數字 0.580 對 0.481 一致 |
-| 5 Methods | `05_methods.tex` | 圖族、lazy 協定、HT 計算、AGJK 協定、語意協定、決策四讀出、部分量測協定、61 個測試 | 程式 | 「E2b 的 $\HT^+/\HT$」與 E2 表的標示一致；「61 tests」與原始碼一致 |
+| 5 Methods | `05_methods.tex` | 圖族、lazy 協定、HT 計算、AGJK 協定、語意協定、決策四讀出、部分量測協定、測試 | 程式 | 論文的測試數與 E2 的樣本描述（「three random marked sets」）需對照新版（71 tests；E2 為 seeds 0–19 的 distinct sets）（待確認） |
 | 6 Results | `06_results.tex` | E1 指數表、E2 表與對抗式結果、E3 數字、E4 讀出比較、E5 讀出與偵測、總結 | `results/` | 第 48 行「complete graph ... $\Theta(N\log N)$-like」與完全圖 $\HT=N-1$ 矛盾（需修正）；「three random marked sets」只有兩個不同集合（需修正） |
 | 7 Discussion | `07_discussion.tex` | 發現、文獻關係、生物學不宣稱、限制、未來工作 | 前述 | 「noise can help at intermediate levels」與文獻比較：措辭合理但「consistent with the broader literature」是寬鬆的說法（待確認） |
 | 8 Conclusion | `08_conclusion.tex` | 三點總結 | 前述 | 第 13 行的一句過長，格式可調整 |
@@ -1452,7 +1464,7 @@ python -m src.experiments --only E1 E3   # 多個實驗可以同時列出
 1. **Conjecture 3 而非證明的 AGJK 演算法**：實驗只驗證 Algorithm 1（簡單版本）的數值行為，不是 $\widetilde O(\sqrt{\HT})$ 的完整版本（快速前饋）。論文明確寫出這點。
 2. **$s$ 的選擇依賴下界**：`_select_interpolation` 用 `interpolated_lower_bound` 的峰值選 $s$，而非真實的 $p_M$。這會影響 $T_q$ 的常數（論文說指數穩定，但未量化）。
 3. **有限尺寸**：最大的圖約 $10^2$ 個頂點（grid $10\times10$）、對抗式環面 $L\le18$ 模擬。指數估計來自 4 個點，不確定性大。
-4. **獨立標記的種子問題**：三個種子只產生兩個不同集合（第 4.3 節、第 5.2 節）。
+4. **獨立標記的種子問題（已處理）**：舊的三個種子只產生兩個不同集合；E2 現用 seeds 0–19 並去除重複集合（第 4.3 節、第 5.2 節）。
 5. **E3 的時間窗**：古典遠目標的峰值在窗邊（$\tau=8$），AUC 依窗而定。
 6. **E4 的 $p=0.2$**：偵測讀出的量測率是人為設定，未掃描。
 7. **E5 的 $\eta$**：$\eta=0.1$ 改變了振盪位置，使早期的 $T=20$ 結果不能直接比較。
@@ -1461,7 +1473,7 @@ python -m src.experiments --only E1 E3   # 多個實驗可以同時列出
 ### 9.2 開放問題（與論文呼應）
 
 - $\HT^+=\Omega(N^2)$ 在更大的 $L$ 上是否成立？需要更高效的 $\HT^+$ 計算（目前是稠密的譜分解）。
-- 獨立標記的 $\HT^+/\HT$ 在 barbell 上為何達 1.52？是否有解析解？
+- 獨立標記的 $\HT^+/\HT$ 在 barbell 上為何達 1.35–1.53（單一集合達 2.94）？是否有解析解？
 - 偵測讀出的最佳 $p$ 是否與圖的譜隙有可解釋的關係？
 - 相似性效應的量子模型是否能擬合真實的選擇資料？（需要行為資料，論文未做。）
 
@@ -1552,13 +1564,13 @@ python -m src.experiments --only E1 E3   # 多個實驗可以同時列出
 6. **E4 的 first crossing 讀出為何不可靠？** 答：它在 $\sum_ip_i(t)$ 第一次越過 0.5 的時刻讀取選擇，而該時刻受振盪相位影響。E4 的 `symmetric3` 在 $c=0.75$ 時 $p_{\text{uncoupled}}=0.833$（時間 351），在 $c=1$ 時為 0.519（時間 6），顯示對 $c$ 極度敏感。
 7. **古典模型在對稱三選項圖上為何在任何 $c$ 下都均勻？** 答：耦合只在分支 1、2 之間加邊，兩者對稱；選項 0 與 1、2 的吸收機率在古典吸收漫步中保持 $1/3$（[CSV] `E4_robustness.csv` 的 classical 讀出為 0.3333）。
 8. **$\HT(s)$ 中為什麼要把標記分量歸零得到 $\sqrt{\pi_U}$？** 答：HT 的定義是從 $U=V\setminus M$ 出發的條件平均，因此只取 $U$ 上的分量。`ht_spectral` 第 72 行。注意 `interpolated_lower_bound` 不歸零，兩者用途不同。
-9. **E2 的 `independent` 三個種子為何只有兩個不同的集合？** 答：`_farthest_point_sample` 的隨機起點由種子決定，種子 0 與 2 在 grid $6\times6$ 與 barbell $n=8$ 上給出相同的起點，因而相同的集合（[CSV] 可見 `30 5 0 21` 重複）。
-10. **論文 $\HT^+/\HT$ 最大的實驗數字是多少？** 答：對抗式環面 $L=36$ 的 8.78；有限集合中 barbell $n=16$ 獨立集合為 1.52（[CSV]）。
+9. **（舊問題，已處理）E2 舊版 `independent` 三個種子為何只有兩個不同的集合？** 答：`_farthest_point_sample` 在對稱圖上不同種子可產生相同集合，現已改用 seeds 0–19 並去除重複。原因：`_farthest_point_sample` 的隨機起點由種子決定，種子 0 與 2 在 grid $6\times6$ 與 barbell $n=8$ 上給出相同的起點，因而相同的集合（[CSV] 可見 `30 5 0 21` 重複）。
+10. **論文 $\HT^+/\HT$ 最大的實驗數字是多少？** 答：對抗式環面 $L=36$ 的 8.78；有限集合中 barbell $n=16$ 獨立集合最大為 2.94（單一集合 $\{0,21,25,29\}$，其餘 17 組 1.35–1.53；中位數 1.53）（[CSV]）。
 11. **CTQW 與 CRW 為何用同一個時間尺度 $\tau=\lambda_1t$ 比較？** 答：兩者的生成元 $L_{\mathrm{sym}}$ 與 $L_{\mathrm{rw}}$ 有相同的特徵值，因此以 $\lambda_1$ 為單位的時間對齊弛緩尺度（論文 `03_theory.tex` 的陳述）。這是規範化選擇，不是唯一可能的選擇。
-12. **E3 中古典遠目標的「峰值」有什麼問題？** 答：[CSV] 顯示其 `tau_peak=8.0`，恰為時間窗右端點。它是窗內最大值而非真正的峰，因此「0.046 基本上是平穩值」的說法需要以平穩分布核對（待確認）。
+12. **E3 中古典遠目標的「峰值」有什麼問題？** 答：CRW 對 violin 沒有內部峰值，單調上升到平穩值 $\pi=0.0455$；CTQW 的 violin 峰值為 0.268（$\tau=19.3$），但 CTQW 震盪強、峰值依窗口，故以 AUC（0.360 對 0.323）比較。
 13. **`measurement_curve` 的時間慣例是什麼？** 答：每一步 $s\to s+1$ 先以機率 $p$ 量測並重設，再做一步漫步。落點分布用的是時刻 $s$ 的狀態；被重設者在 $s+1$ 的年齡為 1。
 14. **為什麼偵測模型的質量守恆？** 答：每次量測的質量要嘛被吸收到 `found`，要嘛被重設（`new_q[:,1]` 只取非標記）；讀取時剩下的質量在 $q_0$ 與 $q_{x,a}$ 中。總和為 1（`test_detection_is_bounded_and_dominates_readout` 檢查 $\le1$）。
-15. **論文宣稱的「61 個測試」與附錄的「47 個」哪個正確？** 答：依原始碼逐一計數為 61（每個 parametrize 展開計算），與 `05_methods.tex` 一致；附錄的 47 是舊數字。正式確認需以 `pytest --collect-only -q` 執行（待確認）。
+15. **論文宣稱的「61 個測試」與附錄的「47 個」哪個正確？** 答：目前測試數為 71；61 與 47 都是舊數字。正式確認以 `pytest --collect-only -q` 為準。
 
 ---
 
@@ -1569,12 +1581,12 @@ python -m src.experiments --only E1 E3   # 多個實驗可以同時列出
 | # | 位置 | 內容 | 依據 | 建議 |
 |---|---|---|---|---|
 | 1 | `report/sections/06_results.tex` 第 48–49 行 | 「complete graph and hypercube have $\HT=\Theta(N\log N)$-like behavior」 | 完全圖 $\HT=N-1$（附錄、測試）；[CSV] $K_N$ 的 $\alpha=1.06$ | 改為「完全圖線性，hypercube 近線性（$\alpha\approx1.07$）」 **[已修正（先前版本已改）]** |
-| 2 | `report/sections/appendix.tex` 第 145 行 | 「currently contains 47 passing tests」 | 原始碼計數 61；`05_methods.tex` 寫 61 | 改為 61 並以實際 pytest 結果為準 **[已修正（appendix.tex 已為 61，pytest 61 passed）]** |
-| 3 | `report/sections/06_results.tex` 第 62–63、78–98 行（表與文字） | 「means are over three random marked sets」 | [CSV] 三個種子只有兩個不同集合（grid 6 的 seed 0、2 相同；barbell 8 的 seed 0、2 相同） | 改寫為「三個種子（兩個不同集合）」或增加種子 **[已修正：caption 改為三個種子、部分情況僅兩個不同集合（grid 6、barbell 8、16）]** |
+| 2 | `report/sections/appendix.tex` 第 145 行 | 「currently contains 47 passing tests」 | 目前測試數為 71 | 已於 2026-11-02 更新為 71（論文 appendix 與 methods 已改，pytest 實測 71 passed） |
+| 3 | `report/sections/06_results.tex` 第 62–63、78–98 行（表與文字） | 「means are over three random marked sets」 | [CSV] 三個種子只有兩個不同集合（grid 6 的 seed 0、2 相同；barbell 8 的 seed 0、2 相同） | E2 已改為 seeds 0–19、去除重複集合；論文 caption 須對應更新（待確認論文是否已更新） |
 | 4 | `report/sections/02_background.tex` 第 26–27 行 | 「hypercube behaves like $N\log N$」 | [CSV] hypercube 的 $\HT/N$ 為 1.15–1.34，接近線性 | 待確認後改寫 **[已修正：改為 Θ(N)，並引用 HT/N≈1.15–1.34]** |
-| 5 | `report/sections/01_introduction.tex` 第 64–65 行（貢獻 2） | 「clustered targets behave like a single target」 | 8×8 grid：群聚 79.5 對單一 95.5（差 17%）；barbell：幾乎相同 | 改為「在 barbell 上接近，在 grid 上較接近」 **[已修正：改為「僅小幅降低（barbell ≈3%、8×8 grid ≈17%）」]** |
+| 5 | `report/sections/01_introduction.tex` 第 64–65 行（貢獻 2） | 「clustered targets behave like a single target」 | distinct sets：群聚相對單一可易可難（barbell $n=16$ 為 0.74–1.09 倍；grid $8\times8$ 為 0.43–1.37 倍，中位數 0.89）；每一組獨立都比每一組群聚容易 | 論文措辭須改為此說法；舊的「≈3%／17% 小幅降低」已作廢（待確認論文是否已更新） |
 | 6 | `report/sections/06_results.tex` 第 142–143（E3）與 `E3_semantic_metrics.csv` | 古典遠目標峰值在窗邊（$\tau=8.0$） | [CSV] `tau_peak=8.0` | 加註「窗內最大值，峰值位於右端點」；AUC 亦依窗而定 |
-| 7 | `report/sections/06_results.tex` 第 129–130 行 | 「CRW only reaches 0.046, essentially its stationary value」 | 平穩值需以 violin 的度數核對（待確認） | 核對後保留或修改 |
+| 7 | `report/sections/06_results.tex` 第 129–130 行 | 「CRW only reaches 0.046, essentially its stationary value」 | CRW 對 violin 沒有內部峰值，單調上升至平穩值 $\pi=0.0455$；CTQW violin 峰值為 0.268（$\tau=19.3$） | 已於 2026-11-02 依此更新（舊的 CTQW 0.247 於 $\tau=6.86$ 作廢） |
 | 8 | `report/sections/03_theory.tex` 「$\HT^+=\Omega(N^2)$」 | 漸近陳述 | 數值只到 $L=36$，$\HT^+/L^2$ 為 0.18–0.34 | 註明僅為漸近陳述，數值支持有限 **[已修正：註明為 AGJK 漸近陳述，數值 L=18–36 不能確立速率]** |
 | 9 | `code/README.md` E5 段落 | 「E5 uses a plain Szegedy walk (s = 0)」 | 程式 `walk_transition` 仍套用 $\eta=0.1$（`experiments.py` 第 649 行） | 補充「並使用 lazy $\eta=0.1$」 **[已修正：README 與 methods 改為 lazy chain P_η(η=0.1) 的 W(0)，即 s=0]** |
 | 10 | `code/configs/experiments.yaml` E5 的註解 | 「plain Szegedy walk」 | 同上 | 同上 **[已修正：yaml 加註解]** |
@@ -1590,7 +1602,7 @@ python -m src.experiments --only E1 E3   # 多個實驗可以同時列出
 
 **未完成項目**（誠實標示）：
 
-- 未執行 `pytest`，測試數 61 為原始碼計數，非實際執行結果。
+- 本次文件更新未重跑 `pytest`；測試數 71 取自委派指示，非本次執行結果。
 - 未逐一核對 E5 的 $T$ 相關敘述（第 5.5 節的待確認清單）。
 - 未核對 E4 的 spread 統計（第 5.4 節的待確認項）。
 - 未目視檢查任何圖（所有圖的描述來自 `plotting.py` 的標籤與結構，標為待確認）。
