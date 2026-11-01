@@ -1,7 +1,7 @@
 {
-  "generated_utc": "2026-11-01T16:50:09+00:00",
-  "git_head": "131fd3032ecb4aaee9bdb69429cd7d2f54896c48",
-  "git_dirty": true,
+  "generated_utc": "2026-11-01T16:50:27+00:00",
+  "git_head": "a9ff57d5d881b32b700523687590ad544d1ea7e2",
+  "git_dirty": false,
   "python": "3.13.13",
   "packages": {
     "numpy": "2.5.4",
